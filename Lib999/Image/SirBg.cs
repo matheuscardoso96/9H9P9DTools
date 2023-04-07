@@ -37,7 +37,7 @@ namespace Lib999.Image
             Image = GetImage(BgInfo, br);
             if (exportDecomp)
             {
-                File.WriteAllBytes($"{Path.GetFileNameWithoutExtension(args[0])}.bin", Image);
+                File.WriteAllBytes($"{Path.GetFileNameWithoutExtension(args[0])}_expD.bin", Image);
             }
             Pal = GetPalete(ColorDep, BgInfo , br);
             br.Close();

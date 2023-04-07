@@ -120,7 +120,7 @@ namespace Lib999.Text
 
 
             MemoryStream memoryStream = new MemoryStream();
-            Directory.CreateDirectory("Convertd_fsb");
+         
 
             using (BinaryWriter bw = new(memoryStream))
             {
