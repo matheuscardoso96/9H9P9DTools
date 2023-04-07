@@ -130,9 +130,9 @@ namespace LibDeImagensGbaDs.Conversor
 
         public static byte[] GenerateNotTiledToBmp(Bitmap imagem, IPalette paleta)
         {
-            imagem.Save("t.png");
+            
             imagem = imagem.ConvertTo32Bpp();
-            imagem.Save("t.png");
+          
             List<byte> indexes = new List<byte>();
             Color[] cores = imagem.GetColors();
 
