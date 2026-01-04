@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Lib999.Text
 {
@@ -15,6 +16,10 @@ namespace Lib999.Text
         //public string EventScript { get; set; } = "";
         public StringBuilder EventScriptFinal { get; set; } = new();
         public Encoding JapaneseEncoding { get; private set; }
+
+        public List<string> EventsStrings { get; set; } = new();
+        public List<int> EventStart { get; set; } = new();
+        public List<int> EventEnding { get; set; }
 
         public SirStrings(BinaryReader br)
         {
@@ -33,6 +38,110 @@ namespace Lib999.Text
                 Dialogs.Add(new Dialog999(i, offset, text, (int)(br.BaseStream.Position - offset)));
             }
 
+
+        }
+
+        public SirStrings(BinaryReader br, uint stgsCount, uint stringTablePosition)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            JapaneseEncoding = Encoding.GetEncoding(932);
+
+            InitSjisTables();
+            StgsCount = stgsCount;
+            StringTablePosition = stringTablePosition;
+            br.BaseStream.Position = StringTablePosition;
+            for (int i = 0; i < StgsCount; i++)
+            {
+                br.BaseStream.Position = StringTablePosition + i * 4;
+                var offset = br.ReadUInt32();
+                var text = GetString(offset, br);
+                var textSize = (int)(br.BaseStream.Position - offset);
+                var dlg999 = new Dialog999(i, offset, text, (int)(textSize));
+                Dialogs.Add(dlg999);
+                br.BaseStream.Position = offset;
+                var textInBytes = br.ReadBytes(textSize);
+                dlg999.TextInBytes = textInBytes;
+             
+            }
+
+
+        }
+
+        public SirStrings(BinaryReader br, uint stringTablePosition, bool eventPointer = false)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            JapaneseEncoding = Encoding.GetEncoding(932);
+
+            InitSjisTables();
+            StringTablePosition = stringTablePosition;
+            br.BaseStream.Position = StringTablePosition;
+
+            var i = 0;
+           
+
+            if (eventPointer)
+            {
+                bool eventpointerFound = true;
+
+                while (true)
+                {
+                    br.BaseStream.Position = StringTablePosition + i * 4;
+                    var offset = br.ReadUInt32();
+
+                    if (offset == 0)
+                    {
+                        break;
+                    }
+
+                    if (eventpointerFound)
+                    {
+                        Dialogs.Add(new Dialog999(i, offset, "<EVENT_POINTER>", 0) { IsEventData = true });
+                        eventpointerFound = false;
+                        br.BaseStream.Position = offset;
+                        EventStart.Add(br.ReadByte());
+                    }
+                    else
+                    {
+                        var text = GetString(offset, br);
+                        var textSize = (int)(br.BaseStream.Position - offset);
+                        var dlg999 = new Dialog999(i, offset, text, (int)(textSize));
+                        Dialogs.Add(dlg999);
+                        eventpointerFound = true;
+                        br.BaseStream.Position = offset;
+                        var textInBytes = br.ReadBytes(textSize);
+                        dlg999.TextInBytes = textInBytes;
+
+                    }
+
+                   
+                   
+                    i++;
+                }
+            }
+            else
+            {
+                while (true)
+                {
+                    br.BaseStream.Position = StringTablePosition + i * 4;
+                    var offset = br.ReadUInt32();
+
+                    if (offset == 0)
+                    {
+                        break;
+                    }
+
+                    var text = GetString(offset, br);
+                    var textSize = (int)(br.BaseStream.Position - offset);
+                    var dlg999 = new Dialog999(i, offset, text, (int)(textSize));
+                    Dialogs.Add(dlg999);
+                    br.BaseStream.Position = offset;
+                    var textInBytes = br.ReadBytes(textSize);
+                    dlg999.TextInBytes = textInBytes;
+                    i++;
+                }
+            }
+
+            
 
         }
 
@@ -151,10 +260,11 @@ namespace Lib999.Text
 
         }
 
+  
+
         public void CreateAScript(BinaryReader br)
         {
             _ = ScanEventArea(br);
-            
 
             foreach (var ev in EventDialogs)
             {
@@ -172,7 +282,7 @@ namespace Lib999.Text
 
 
                     EventScriptFinal.Append(ev?.Description);
-                    EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}>",$"{Dialogs[(ev.Args[0] << 2) / 4].Text.Replace("<END>", "")}>"));
+                    EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}>", $"{Dialogs[(ev.Args[0] << 2) / 4].Text.Replace("<END>", "")}>"));
                 }
                 else if (ev.Description.Contains("print_msg"))
                 {
@@ -187,10 +297,10 @@ namespace Lib999.Text
                     var comandName = Dialogs[(codeInt << 2) / 4].Text.Replace("<END>", "");
 
 
-                    if (comandName.Contains("?System") || comandName.Contains("?Sound") 
-                        || comandName.Contains("?BG") || comandName.Contains("?View") 
-                        || comandName.Contains("?Call") 
-                        || comandName.Contains("?Item")) 
+                    if (comandName.Contains("?System") || comandName.Contains("?Sound")
+                        || comandName.Contains("?BG") || comandName.Contains("?View")
+                        || comandName.Contains("?Call")
+                        || comandName.Contains("?Item"))
                     {
                         var subName = "";
                         var codeInt2 = 0;
@@ -211,6 +321,160 @@ namespace Lib999.Text
 
 
 
+                }
+                else if (ev.Description.Contains("END_SECTION"))
+                {
+                    EventScriptFinal.Append("\r\n------------------------------------------------------------------\r\n");
+                    EventScriptFinal.Append(ev?.Description);
+                    EventScriptFinal.Append(ev?.FinalDesc);
+                    EventScriptFinal.Append("\r\n------------------------------------------------------------------\r\n");
+                }
+                else
+                {
+                    EventScriptFinal.Append(ev?.Description);
+                    EventScriptFinal.Append(ev?.FinalDesc);
+                }
+
+
+            }
+        }
+
+
+
+        public void CreateAScriptV2(BinaryReader br, SirStrings eventStringsBlock)
+        {
+            //foreach (var ev in eventStringsBlock.Dialogs)
+            //{
+            //    if (ev.IsEventData)
+            //    {
+            //        ScanEventAreaV2(br, ev);
+
+            //    }
+            //}
+
+            for (int i = 0; i < eventStringsBlock.Dialogs.Count; i++)
+            {
+                if (eventStringsBlock.Dialogs[i].IsEventData)
+                {
+                    ScanEventAreaV2(br, eventStringsBlock.Dialogs[i], eventStringsBlock.Dialogs[i+ 1]);
+
+                }
+            }
+
+            foreach (var ev in EventDialogs)
+            {
+                if (ev.Description.Contains("comand0x28"))
+                {
+                    var command = Dialogs[(ev.Args[0] << 2) / 4].Text;
+
+                    Strings.Add("\r\n");
+
+                    NameTags.TryGetValue(command.Replace("<END>", ""), out var nameTag);
+                    if (nameTag != null)
+                        Strings.Add($"{nameTag}<END>");
+                    else
+                        Strings.Add(command);
+
+                   // EventScriptFinal.Append("\r\n"+ ev?.Description);
+
+                    var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
+                    eventOffset0.HasString = true;
+                    var append = $"\r\n<char:{Dialogs[(ev.Args[0] << 2) / 4].Text}>";
+                    EventScriptFinal.Append(append);
+                    //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}>", $"{Dialogs[(ev.Args[0] << 2) / 4].Text.Replace(" < END>", "")}>"));
+                    //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}>", $"[ID: {ev.Args[0]}, EventOffset : {eventOffset0.Offset.ToString("X")} SUM_ID: {(ev.Args[0] * 4).ToString("X")}],  {Dialogs[(ev.Args[0] << 2) / 4].Text.Replace(" < END>", "")}>"));
+                }
+                else if (ev.Description.Contains("print_msg"))
+                {
+                    var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
+                    Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
+                   
+                    var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
+                    eventOffset0.HasString = true;
+                    //EventScriptFinal.Append(ev?.Description);
+                    
+                    
+                    EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"{dlg}"));
+                    
+                    //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[{dlg}]"));
+                    // EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[ID: {ev.Args[0]}, EventOffset : {eventOffset0.Offset.ToString("X")}] [{dlg}]"));
+
+                   
+                }
+                //else if (ev.Description.Contains("0x33"))
+                //{
+                //    var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
+                //    Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
+                   
+                //    var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
+                //    eventOffset0.HasString = true;
+                //    //EventScriptFinal.Append(ev?.Description);
+                    
+                    
+                //    EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"{dlg}"));
+                    
+                //    //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[{dlg}]"));
+                //    // EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[ID: {ev.Args[0]}, EventOffset : {eventOffset0.Offset.ToString("X")}] [{dlg}]"));
+
+                   
+                //}
+                else if (ev.Description.Contains("comand0x34"))
+                {
+                
+                    try
+                    {
+                        var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
+                        Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
+
+                        var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
+                        eventOffset0.HasString = true;
+                        //EventScriptFinal.Append(ev?.Description);
+
+
+                        EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}", $"{dlg}"));
+                    }
+                    catch (Exception ex)
+                    {
+
+                        throw;
+                    }
+
+
+                    //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[{dlg}]"));
+                    // EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[ID: {ev.Args[0]}, EventOffset : {eventOffset0.Offset.ToString("X")}] [{dlg}]"));
+
+
+                }
+                else if (ev.Description.Contains("comand0x0D") && ev.Args[0] == 0xF4)
+                {
+                    var codes = ev.FinalDesc.Split(" ");
+                    var codeInt = Convert.ToInt32(codes[2]);
+                    var comandName = Dialogs[(codeInt << 2) / 4].Text.Replace("<END>", "");
+
+                    var subName = "";
+                    var codeInt2 = 0;
+
+                    codeInt2 = Convert.ToInt32(codes[3].Replace(">", ""));
+
+                    subName = Dialogs[(codeInt2 << 2) / 4].Text.Replace("<END>", "");
+                    EventScriptFinal.Append(ev?.Description);
+                    var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == codeInt);
+                    var eventOffset1 = ev.OffsetsWithStrings.First(e => e.Code == codeInt2);
+                    eventOffset0.HasString = true;
+                    eventOffset1.HasString = true;
+                    //EventScriptFinal.Append($": 244 [ID: {codeInt}, EventOffset : {eventOffset0.Offset.ToString("X")}] {comandName} [ID: {codeInt2}, EventOffset : {eventOffset1.Offset.ToString("X")}] {subName}>");
+                    EventScriptFinal.Append($": 244  {comandName} {subName}>");
+
+                    EventsStrings.Add(comandName);
+                    EventsStrings.Add(subName);
+
+
+                }
+                else if (ev.Description.Contains("END_SECTION"))
+                {
+                    EventScriptFinal.Append(ev?.Description);
+                    EventScriptFinal.Append(ev?.FinalDesc);
+                    EventScriptFinal.Append("\r\n------------------------------------------------------------------\r\n");
                 }
                 else
                 {
@@ -310,30 +574,44 @@ namespace Lib999.Text
             
         }
 
+        int[] especialCodes = new int[] { 
+            0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F,
+            0x90,0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F
+        };
+
         private string GetString(uint offset, BinaryReader br)
         {
             
             br.BaseStream.Position = offset;
             StringBuilder text = new();
-            
+
+            if (offset == 0xb8cb)
+            {
+
+            }
             int code;
             do
             {
+                
+
                 code = br.ReadByte();
-                if (code == 0xE1)
+                if (code == 0x8F)
                 {
 
                 }
 
-                if (code >= 0x20 && code < 0x7F) //|| code >= 0xE0 && code < 0xFD)
+                if ((code >= 0x20 && code < 0xF2) && !especialCodes.Contains(code)) //|| code >= 0xE0 && code < 0xFD)
                     text.Append(Convert.ToChar(code));
                 else if (code >= 0xA1 && code <= 0xDD)
                 {
                     var index = Array.IndexOf(SjisCompTbl, code);
-                    var sjisCode = SjisDecompTbl[index];
-                    var bytes = BitConverter.GetBytes(sjisCode).Take(2).ToArray();
-                    var tex = JapaneseEncoding.GetString(bytes);
-                    text.Append(tex);
+                    //var sjisCode = SjisDecompTbl[index];
+                    //var bytes = BitConverter.GetBytes(sjisCode).Take(2).ToArray();
+                    //var tex = JapaneseEncoding.GetString(bytes);
+                    //text.Append(tex);
+
+                    var tex = code;
+                    text.Append((char)tex);
                 }
                 else if (code == 0x00) text.Append(SpecialChars.First().Value.Description);
                 else if (code >= 0x80)
@@ -355,9 +633,16 @@ namespace Lib999.Text
                             var bytes = Array.Empty<byte>();
                             bytes = BitConverter.GetBytes(specialCharCode).Take(2).Reverse().ToArray();
 
+                            var index = Array.IndexOf(SjisCompTbl, code);
 
+                            
                             var tex = JapaneseEncoding.GetString(bytes);
                             text.Append(tex);
+                            
+                           
+
+                            
+                            
                         }
                         else
                         {
@@ -377,7 +662,10 @@ namespace Lib999.Text
                 }
 
 
-
+                if (text.ToString().Contains("SCORE"))
+                {
+                
+                }
 
 
             } while (code != 0x00);
@@ -471,33 +759,119 @@ namespace Lib999.Text
                     EventDialogs.Add(new CommandEvent() { FinalDesc = "<0x" + code.ToString("X2") + ">" });
                    
                 }
+                if (br.BaseStream.Position >= 0xF45)
+                {
+
+                }
             }
 
             return eventPart.ToString();
 
         }
 
-        private void InitEventCommands()
+        private void ScanEventAreaV2(BinaryReader br, Dialog999 eventData, Dialog999 eventTitle)
         {
-            var commandTbl = File.ReadLines("commands.tbl");
+            var eventPart = new StringBuilder();
+            br.BaseStream.Position = eventData.Offset;
 
-            foreach (var item in commandTbl)
+            EventDialogs.Add(new CommandEvent() { Description = $"<Event: {eventTitle.Text} Offset: 0x{eventData.Offset.ToString("X")}>\r\n" }); ;
+
+            InitEventCommands();
+            var code = br.ReadByte();
+
+            while (code != 0x26)
             {
-                var entry = item.Split('º');
-                var code = Convert.ToInt32(entry[0], 16);
-                var description = entry[1];
-                var argcount = Convert.ToInt32(entry[2]);
+                AddComand(br, eventPart, code);
 
-                if (argcount > 0)
+                code = br.ReadByte();
+                if (br.BaseStream.Position >= 0x2B5)
                 {
-                    var argType = entry[3];
-                    EventCommands.Add(code, new CommandEvent { Description = description, ArgCount = argcount, ArgType = argType });
+
+                }
+
+                if (code == 0x26)
+                {
+                    AddComand(br, eventPart, code);
+
+                    var nextCode = br.ReadByte();
+
+                    if (nextCode == 0x45)
+                    {
+                        AddComand(br, eventPart, nextCode);
+                    }
+                    else
+                    {
+                        br.BaseStream.Position--;
+                    }
+                }
+            }
+
+            var size = (br.BaseStream.Position - eventData.Offset);
+            br.BaseStream.Position = eventData.Offset;
+            var textInBytes = br.ReadBytes((int)size);
+            eventData.Text = eventPart.ToString();
+            eventData.TextInBytes = textInBytes;
+
+        }
+
+        private void AddComand(BinaryReader br, StringBuilder eventPart, byte code)
+        {
+            try
+            {
+                EventCommands.TryGetValue(code, out var command);
+                if (command != null)
+                {
+                    var clone = (CommandEvent)command.Clone();
+                    eventPart.Append(clone?.Description);
+                    clone.Offset = br.BaseStream.Position;
+                    clone?.GetArgsV2(br);
+                    eventPart.Append(clone?.FinalDesc);
+                    clone.Code = code;
+                    EventDialogs.Add(clone);
+
                 }
                 else
                 {
-                    EventCommands.Add(code, new CommandEvent { Description = description });
+                    throw new Exception("Command not found in table: 0x" + code.ToString("X2"));
+                    // EventDialogs.Add(new CommandEvent() { FinalDesc = "<0x" + code.ToString("X2") + ">" });
+
                 }
             }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+           
+        }
+
+        private void InitEventCommands()
+        {
+            if (EventCommands.Count == 0)
+            {
+                var commandTbl = File.ReadLines("commands.tbl");
+
+                foreach (var item in commandTbl)
+                {
+                    var entry = item.Split('º');
+                    var code = Convert.ToInt32(entry[0], 16);
+                    var description = entry[1];
+                    var argcount = Convert.ToInt32(entry[2]);
+
+
+                    if (argcount > 0)
+                    {
+                        var argType = entry[3];
+                        EventCommands.Add(code, new CommandEvent { Description = description, ArgCount = argcount, ArgType = argType });
+                    }
+                    else
+                    {
+                        EventCommands.Add(code, new CommandEvent { Description = description });
+                    }
+                }
+
+            }
+            
         }
 
         private void InitSjisTables()
@@ -532,6 +906,10 @@ namespace Lib999.Text
 
                 if (toReplace != null)
                     item.Text = toReplace.Text;
+                else
+                {
+                    Console.WriteLine("not replaced");
+                }
 
                 SetDliag999TextInBytes(item);
             }
@@ -555,6 +933,31 @@ namespace Lib999.Text
                 bw.BaseStream.Position = StringTablePosition + i * 4;
                 bw.Write(Dialogs[i].Offset);
 
+            }
+
+        }
+
+        public void ReplaceDialogsWithIdsSimple(List<Dialog999> dialogsToReplace)
+        {
+            InitSpecialCharsCode();
+
+            foreach (var item in Dialogs)
+            {
+                var toReplace = dialogsToReplace.FirstOrDefault(x => x.Id == item.Id);
+
+               
+                if (toReplace != null)
+                {
+                    if (!(toReplace?.IsCommand).GetValueOrDefault())
+                    {
+                        item.Text = toReplace.Text;
+                        SetDliag999TextInBytes(item);
+                    }
+
+                   
+                }
+
+               
             }
 
         }
@@ -659,7 +1062,6 @@ namespace Lib999.Text
                     SetDliag999TextInBytesPC(dialog);
 
             }
-
 
 
 
@@ -866,7 +1268,7 @@ namespace Lib999.Text
             ["&一宮"] = "[Ichinomiya/Ace]",
             ["&八代"] = "[Yashiro/Lotus]",
             ["&紫"] = "[Murasaki/June]",
-            ["&？？？１"] = "[???]",
+            ["&？？？１"] = "[???1]",
             ["&？？？"] = "[???]",
 
 

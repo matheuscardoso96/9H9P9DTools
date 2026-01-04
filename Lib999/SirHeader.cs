@@ -2,10 +2,10 @@
 {
     public class SirHeader 
     {
-        public int Magic { get; private set; }
-        public int Offset0 { get; private set; }
-        public int Offset1 { get; private set; }
-        public int Unknown { get; private set; }
+        public int Magic { get; set; }
+        public int Offset0 { get; set; }
+        public int Offset1 { get; set; }
+        public int Unknown { get; set; }
 
         public SirHeader(BinaryReader br)
         {

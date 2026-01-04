@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Lib999
 {
@@ -78,11 +79,19 @@ namespace Lib999
             }
 
         }
-    
+
+        public static string ReadNullTerminatedString(BinaryReader br)
+        {
+            var sb = new StringBuilder();
+            char c;
+            while ((c = br.ReadChar()) != '\0')
+            {
+                sb.Append(c);
+            }
+            return sb.ToString();
+        }
     }
 
-
-    
 
 
 }

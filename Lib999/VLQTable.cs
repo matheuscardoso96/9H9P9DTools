@@ -10,6 +10,7 @@ namespace Lib999
     {
         public List<byte> DataVLQ { get; set; } = new();
         public List<uint> DecompressedValues { get; set; } = new();
+        public List<uint> TopValues { get; set; } = new();
         public VLQTable(BinaryReader br)
         {
             var position = br.BaseStream.Position;
@@ -44,6 +45,29 @@ namespace Lib999
 
             br.BaseStream.Position = position;
             ReadOffestArea(br);
+
+            //var lists = new Dictionary<uint, List<uint>>();
+            //lists.Add(0, new List<uint>());
+
+            //var key = 0u;
+            //foreach (var item in DecompressedValues)
+            //{
+            
+            //    //if (lists.ContainsKey(key)) { continue; }
+
+            //    if (item != 4)
+            //    {
+            //      key =  item;
+            //      lists.Add((uint)key, new List<uint>());
+            //       continue;
+            //    }
+               
+
+            //    lists[key].Add(item);
+          
+            //}
+
+            TopValues = DecompressedValues.Where(x => x > 4).ToList();
         }
 
         public VLQTable()

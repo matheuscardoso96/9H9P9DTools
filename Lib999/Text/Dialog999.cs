@@ -3,11 +3,14 @@
     public class Dialog999
     {
         public int Id { get; set; }
+        public int NewId { get; set; }
         public uint Offset { get; set; }
         public ulong LOffset { get; set; }
         public string Text { get; set; }
         public int Lenght { get; set; }
         public byte[] TextInBytes { get; set; }
+        public bool IsEventData{ get; set; }
+        public bool IsCommand { get; set; }
 
         public Dialog999(int id, uint offset, string text, int length)
         {
