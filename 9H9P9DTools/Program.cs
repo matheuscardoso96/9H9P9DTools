@@ -182,7 +182,7 @@ static void ExportFsb(string args)
     var argsSplit = args.Replace(" ", "").Split(',');
     if (File.Exists(argsSplit[0]))
     {
-        //Console.WriteLine($"Exportando fsb: {Path.GetFileName(argsSplit[0])}");
+        Console.WriteLine($"Exportando fsb: {Path.GetFileName(argsSplit[0])}");
         var texts = new FsbTexts(argsSplit[0]);
         texts.FsbToTxt(argsSplit[0], true);
 
@@ -199,6 +199,7 @@ static void ImportFsb(string args, string txtfilePath)
 
         Console.WriteLine($"Importando fsb: {Path.GetFileName(argsSplit[0])}");
         var texts = new FsbTexts(argsSplit[0], txtfilePath);
+        texts.TxtToFsb(argsSplit[0], txtfilePath);
 
     }
     catch (Exception ex)

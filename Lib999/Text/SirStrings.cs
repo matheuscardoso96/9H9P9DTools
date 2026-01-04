@@ -305,10 +305,6 @@ namespace Lib999.Text
                         var subName = "";
                         var codeInt2 = 0;
                         codeInt2 = Convert.ToInt32(codes[3].Replace(">", ""));
-                        if (codeInt2 == 0x9B)
-                        {
-
-                        }
                         subName = Dialogs[(codeInt2 << 2) / 4].Text.Replace("<END>", "");
                         EventScriptFinal.Append(ev?.Description);
                         EventScriptFinal.Append($": 244 {comandName} {subName}>");
@@ -343,14 +339,6 @@ namespace Lib999.Text
 
         public void CreateAScriptV2(BinaryReader br, SirStrings eventStringsBlock)
         {
-            //foreach (var ev in eventStringsBlock.Dialogs)
-            //{
-            //    if (ev.IsEventData)
-            //    {
-            //        ScanEventAreaV2(br, ev);
-
-            //    }
-            //}
 
             for (int i = 0; i < eventStringsBlock.Dialogs.Count; i++)
             {
@@ -375,14 +363,11 @@ namespace Lib999.Text
                     else
                         Strings.Add(command);
 
-                   // EventScriptFinal.Append("\r\n"+ ev?.Description);
-
                     var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
                     eventOffset0.HasString = true;
                     var append = $"\r\n<char:{Dialogs[(ev.Args[0] << 2) / 4].Text}>";
                     EventScriptFinal.Append(append);
-                    //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}>", $"{Dialogs[(ev.Args[0] << 2) / 4].Text.Replace(" < END>", "")}>"));
-                    //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}>", $"[ID: {ev.Args[0]}, EventOffset : {eventOffset0.Offset.ToString("X")} SUM_ID: {(ev.Args[0] * 4).ToString("X")}],  {Dialogs[(ev.Args[0] << 2) / 4].Text.Replace(" < END>", "")}>"));
+                    
                 }
                 else if (ev.Description.Contains("print_msg"))
                 {
@@ -391,14 +376,8 @@ namespace Lib999.Text
                    
                     var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
                     eventOffset0.HasString = true;
-                    //EventScriptFinal.Append(ev?.Description);
-                    
-                    
                     EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"{dlg}"));
-                    
-                    //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[{dlg}]"));
-                    // EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[ID: {ev.Args[0]}, EventOffset : {eventOffset0.Offset.ToString("X")}] [{dlg}]"));
-
+                   
                    
                 }
                 //else if (ev.Description.Contains("0x33"))
@@ -421,27 +400,12 @@ namespace Lib999.Text
                 else if (ev.Description.Contains("comand0x34"))
                 {
                 
-                    try
-                    {
                         var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
                         Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
 
                         var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
                         eventOffset0.HasString = true;
-                        //EventScriptFinal.Append(ev?.Description);
-
-
                         EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}", $"{dlg}"));
-                    }
-                    catch (Exception ex)
-                    {
-
-                        throw;
-                    }
-
-
-                    //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[{dlg}]"));
-                    // EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[ID: {ev.Args[0]}, EventOffset : {eventOffset0.Offset.ToString("X")}] [{dlg}]"));
 
 
                 }
@@ -462,13 +426,11 @@ namespace Lib999.Text
                     var eventOffset1 = ev.OffsetsWithStrings.First(e => e.Code == codeInt2);
                     eventOffset0.HasString = true;
                     eventOffset1.HasString = true;
-                    //EventScriptFinal.Append($": 244 [ID: {codeInt}, EventOffset : {eventOffset0.Offset.ToString("X")}] {comandName} [ID: {codeInt2}, EventOffset : {eventOffset1.Offset.ToString("X")}] {subName}>");
+                    
                     EventScriptFinal.Append($": 244  {comandName} {subName}>");
 
                     EventsStrings.Add(comandName);
                     EventsStrings.Add(subName);
-
-
                 }
                 else if (ev.Description.Contains("END_SECTION"))
                 {
@@ -784,10 +746,6 @@ namespace Lib999.Text
                 AddComand(br, eventPart, code);
 
                 code = br.ReadByte();
-                if (br.BaseStream.Position >= 0x2B5)
-                {
-
-                }
 
                 if (code == 0x26)
                 {
@@ -833,7 +791,6 @@ namespace Lib999.Text
                 else
                 {
                     throw new Exception("Command not found in table: 0x" + code.ToString("X2"));
-                    // EventDialogs.Add(new CommandEvent() { FinalDesc = "<0x" + code.ToString("X2") + ">" });
 
                 }
             }
@@ -896,9 +853,12 @@ namespace Lib999.Text
 
         public void ReplaceDialogsWithIds(List<Dialog999> dialogsToReplace, BinaryWriter bw)
         {
+            // var  dls = Dialogs.Where(x => x.Text.Contains("While on the item screen, you will be able to investigate")).ToList();
             InitSpecialCharsCode();
             var firstOriginalDialogFromFsbOffset = Dialogs.First().Offset;
             int stringBlockTotalSize = (int)(Dialogs.Last().Offset + Dialogs.Last().Lenght - firstOriginalDialogFromFsbOffset);
+
+            //var hs = dialogsToReplace.Where(x => x.Id == dls.First().Id).FirstOrDefault();
 
             foreach (var item in Dialogs)
             {
