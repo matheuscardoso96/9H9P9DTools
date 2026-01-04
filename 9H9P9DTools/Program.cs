@@ -14,7 +14,7 @@ if (args.Length > 0)
     }
     else if (args[0] == "-i")
     {
-
+        ImportFiles();
     }
 
     Console.WriteLine("Fim da operação.");
@@ -162,10 +162,7 @@ static void ExportBg(string args)
 
     var bg = new SirBg(argsSplit[0], argsSplit.Any(x => x.Contains("expD")));
     Console.WriteLine($"Exportando bg: {bg.FileName}");
-    var img = bg.ConvertImageToBmp();
-    var dest = $"999_exported\\{argsSplit[0].Replace(Path.GetFileName(argsSplit[0]), "")}";
-    Directory.CreateDirectory(dest);
-    img.Save($"{dest}\\{bg.FileName}.png");
+    bg.SirBgToPng(argsSplit[0]);
 
 }
 
@@ -174,7 +171,7 @@ static void ImportBg(string args, string pngPath)
     var argsSplit = args.Replace(" ", "").Split(',');
     var bg = new SirBg(argsSplit[0]);
     Console.WriteLine($"Importando bg: {bg.FileName}");
-    bg.InsertImage(pngPath, argsSplit[0]);
+    bg.PngToSirBg(pngPath, argsSplit[0]);
 }
 
 static void ExportFsb(string args)
@@ -209,14 +206,11 @@ static void ImportFsb(string args, string txtfilePath)
         Console.WriteLine("Pressione Enter para continuar.");
         Console.ForegroundColor = ConsoleColor.White;
         Console.ReadKey();
-
     }
     finally
     {
 
     }
-
-
 
 }
 

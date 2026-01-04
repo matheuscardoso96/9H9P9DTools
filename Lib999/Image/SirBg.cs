@@ -94,7 +94,7 @@ namespace Lib999.Image
 
         }
 
-        public void InsertImage(string imagePath, string savePath) 
+        public void PngToSirBg(string imagePath, string savePath) 
         {
             Bitmap image = new Bitmap(imagePath);
             var convertedImage = Array.Empty<byte>();
@@ -129,6 +129,14 @@ namespace Lib999.Image
                 Directory.CreateDirectory(dest);
                 File.WriteAllBytes($"{dest}\\{Path.GetFileName(FileName)}",ATP6.Encode(originalFile.ToArray()));
             }
+        }
+
+        public void SirBgToPng(string destination)
+        {
+            var img = ConvertImageToBmp();
+            var dest = $"999_exported\\{destination.Replace(Path.GetFileName(destination), "")}";
+            Directory.CreateDirectory(dest);
+            img.Save($"{dest}\\{FileName}.png");
         }
     }
 
