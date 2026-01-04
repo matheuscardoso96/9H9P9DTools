@@ -391,10 +391,10 @@ namespace Lib999.Text
                     continue;
                 }
 
-                if (commandChars.Contains(output[0]))
-                {
-                    dlg999.IsCommand = true;
-                }
+                //if (commandChars.Contains(output[0]))
+                //{
+                //    dlg999.IsCommand = true;
+                //}
 
                 dlgs999.Add(dlg999);
             }
