@@ -95,7 +95,11 @@ namespace Lib999.Text
                 }
             }
 
-            ExportAllStringBlocks(destPath, path);
+            if (exportEvents)
+            {
+                ExportAllStringBlocks(destPath, path);
+            }
+            
         }
 
         private void GetFsbData(BinaryReader br)
