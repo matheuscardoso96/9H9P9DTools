@@ -416,10 +416,6 @@ namespace Lib999.Text
 
                 foreach (var st in MainStringBlock?.EventDialogs)
                 {
-                    //if (!st.Description.Contains("print_msg"))
-                    //{
-                    //    continue;
-                    //}
 
                     if (st.OffsetsWithStrings.Count > 0)
                     {
@@ -429,8 +425,8 @@ namespace Lib999.Text
                             {
                                 var dlg = MainStringBlock.Dialogs.First(d => d.Id == off.Code);
 
-                                //if (dlg.NewId != off.Code) 
-                                //{
+                                if (dlg.NewId != off.Code)
+                                {
                                     bw.BaseStream.Position = off.Offset;
 
                                     switch (off.CodeType)
@@ -444,7 +440,7 @@ namespace Lib999.Text
                                         default:
                                             break;
                                     }
-                               // }
+                                }
 
                             }
                         }
