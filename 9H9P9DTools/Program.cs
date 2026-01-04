@@ -3,35 +3,19 @@ using Lib999.Font;
 using Lib999.Image;
 using Lib999.Text;
 
-Compare();
-
-try
-{
-    ImportFiles();
-}
-catch (Exception ex)
-{
-
-    throw;
-}
-
-
-
-
-//args = new string[] { "-i" };
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 if (args.Length > 0)
 {
 
-    //if (args[0] == "-e")
-    //{
-    //    ExportFiles();
-    //}
-    //else if (args[0] == "-i")
-    //{
+    if (args[0] == "-e")
+    {
+        ExportFiles();
+    }
+    else if (args[0] == "-i")
+    {
 
-    //}
+    }
 
     Console.WriteLine("Fim da operação.");
     Console.ReadKey();
@@ -52,32 +36,32 @@ static void ExportFiles()
     {
 
 
-        //if (file.Contains("*"))
-        //    continue;
+        if (file.Contains("*"))
+            continue;
 
-        //if (file.Contains("-fe"))
-        //    ExportFont(file);
+        if (file.Contains("-fe"))
+            ExportFont(file);
 
-        //if (file.Contains("-bge"))
-        //    ExportBg(file);
+        if (file.Contains("-bge"))
+            ExportBg(file);
 
         if (file.Contains("-fsbe"))
             ExportFsb(file);
 
-        //if (file.Contains("-dattextv1e"))
-        //    ExportFileTexts(file);
+        if (file.Contains("-dattextv1e"))
+            ExportFileTexts(file);
 
-        //if (file.Contains("-dattextv4e"))
-        //    ExportSystemTexts(file);
+        if (file.Contains("-dattextv4e"))
+            ExportSystemTexts(file);
 
-        //if (file.Contains("-itemstextse"))
-        //    ExportItemsNames(file);
+        if (file.Contains("-itemstextse"))
+            ExportItemsNames(file);
 
-        // if (file.Contains("-cameratextse"))
-        //    ExportCameraTexts(file);
+        if (file.Contains("-cameratextse"))
+            ExportCameraTexts(file);
 
-        //if (file.Contains("-charatextse"))
-        //    ExportCharaTexts(file);
+        if (file.Contains("-charatextse"))
+            ExportCharaTexts(file);
     }
 
 }
