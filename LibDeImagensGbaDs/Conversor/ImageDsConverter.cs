@@ -105,16 +105,19 @@ namespace LibDeImagensGbaDs.Conversor
         //}
 
 
-        private static void InitilizeConverters() 
+        public static void InitilizeConverters() 
         {
             _isConvertersInitialized = true;
-            _indexedFormatConverters = new Dictionary<ColorDepth, IIndexedFormat>();
-            _indexedFormatConverters.Add(ColorDepth.F1BBP, new F1BPP());
-            _indexedFormatConverters.Add(ColorDepth.F2BBP, new F2BPP());
-            _indexedFormatConverters.Add(ColorDepth.F4BBP, new F4BPP());
-            _indexedFormatConverters.Add(ColorDepth.F8BBP, new F8BPP());
-            _indexedFormatConverters.Add(ColorDepth.FA3I5, new FA3I5());
-            _indexedFormatConverters.Add(ColorDepth.FA5I3, new FA5I3());
+            if (_indexedFormatConverters == null || _indexedFormatConverters.Count == 0)
+            {
+                _indexedFormatConverters = new Dictionary<ColorDepth, IIndexedFormat>();
+                _indexedFormatConverters.Add(ColorDepth.F1BBP, new F1BPP());
+                _indexedFormatConverters.Add(ColorDepth.F2BBP, new F2BPP());
+                _indexedFormatConverters.Add(ColorDepth.F4BBP, new F4BPP());
+                _indexedFormatConverters.Add(ColorDepth.F8BBP, new F8BPP());
+                _indexedFormatConverters.Add(ColorDepth.FA3I5, new FA3I5());
+                _indexedFormatConverters.Add(ColorDepth.FA5I3, new FA5I3());
+            }
         }
 
     }

@@ -1,27 +1,29 @@
 ﻿using Lib999.Font;
 using Lib999.Image;
 using Lib999.Text;
+using LibDeImagensGbaDs.Conversor;
 using NdsRom.NRom;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
+//args = new string[] { "-i", "-r", "Nine Hours, Nine Persons, Nine Doors (USA).nds", "-parallel" }; 
+
 if (args.Length > 0)
 {
+    bool useParallel = args.Contains("-parallel");
 
-    if (args.Length == 3 && args[0] == "-e" && args[1] == "-r" && args[2].Contains(".nds"))
+    if (args.Length >= 3 && args[0] == "-e" && args[1] == "-r" && args[2].Contains(".nds"))
     {
        await ExportFiles(args[2]);
     }
-    else if (args.Length == 3 && args[0] == "-i" && args[1] == "-r" && args[2].Contains(".nds"))
+    else if (args.Length >= 3 && args[0] == "-i" && args[1] == "-r" && args[2].Contains(".nds"))
     {
-        ImportFiles(args[2]);
+        await ImportFiles(args[2], useParallel);
     }
 
     Console.WriteLine("Fim da operação, aperte qualquer letra para encerrar.");
     Console.ReadKey();
 }
-
-
 
 async static Task ExportFiles(string romPath)
 {
@@ -64,103 +66,55 @@ async static Task ExportFiles(string romPath)
             ExportCharaTexts(file);
     }
 
-    var destDir = "999_edited";
+    var destDir = "999_edited\\root";
     Directory.CreateDirectory(destDir);
 }
 
 const string filesToImportDir = "999_edited\\";
 
-static void ImportFiles(string romPath)
+async static Task ImportFiles(string romPath, bool useParallel)
 {
+    ImageDsConverter.InitilizeConverters();
 
     if (!File.Exists(romPath))
     {
-        Console.WriteLine($"Rom não econtrada. Caminho {romPath}, vefique o arquivo importação .bat.");
+        Console.WriteLine($"Rom não encontrada. Caminho {romPath}, verifique o arquivo de importação .bat.");
         return;
     }
-    
+
     var importArgs = File.ReadAllLines(@"EssentialFiles\fileExportList.txt");
     var files = Directory.GetFiles(filesToImportDir, "*", SearchOption.AllDirectories);
 
-
-    foreach (var file in files)
+    if (useParallel)
     {
-        if (file.Contains(".png") && file.Contains("kanji"))
-            continue;
-
-        var fileP = file.Replace(".png", "").Replace(".txt", "").Split(new string[] { filesToImportDir }, StringSplitOptions.RemoveEmptyEntries)[0];
-        var arg = importArgs.FirstOrDefault(x => x.Contains(fileP));
-
-        if (arg is null)
-            continue;
-
-        if (arg.Contains("-bge"))
-            arg = arg.Replace("-bge", "-bgi");
-
-        if (arg.Contains("-fe"))
-            arg = arg.Replace("-fe", "-fi");
-
-        if (arg.Contains("-fsbe"))
-            arg = arg.Replace("-fsbe", "-fsbi");
-
-        if (arg.Contains("-dattextv1e"))
-            arg = arg.Replace("-dattextv1e", "-dattextv1i");
-
-        if (arg.Contains("-dattextv4e"))
-            arg = arg.Replace("-dattextv4e", "-dattextv4i");
-
-        if (arg.Contains("-itemstextse"))
-            arg = arg.Replace("-itemstextse", "-itemstextsi");
-
-        if (arg.Contains("-cameratextse"))
-            arg = arg.Replace("-cameratextse", "-cameratextsi");
-
-        if (arg.Contains("-charatextse"))
-            arg = arg.Replace("-charatextse", "-charatextsi");
-
-        if (arg.Contains("*"))
-            continue;
-
-        if (arg.Contains("-fi"))
-            ImportFont(arg, file);
-
-        if (arg.Contains("-bgi"))
-            ImportBg(arg, file);
-
-        if (arg.Contains("-fsbi"))
-            ImportFsb(arg, file);
-
-        if (arg.Contains("-dattextv1i"))
-            ImportFileTexts(arg, file);
-
-        if (arg.Contains("-dattextv4i"))
-            ImportSystemTexts(arg, file);
-
-        if (arg.Contains("-itemstextsi"))
-            ImportItemsNames(arg, file);
-
-        if (arg.Contains("-cameratextsi"))
-            ImportCameraTexts(arg, file);
-
-        if (arg.Contains("-charatextsi"))
-            ImportCharaTexts(arg, file);
+        await Task.Run(() =>
+        {
+            Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, (int)(Environment.ProcessorCount * 0.2)) }, file =>
+            {
+                ProcessFile(file, importArgs);
+            });
+        });
     }
-
+    else
+    {
+        foreach (var file in files)
+        {
+            ProcessFile(file, importArgs);
+        }
+    }
 
     var convertedDir = "999_converted";
 
     if (!Directory.Exists(convertedDir))
     {
-        Console.WriteLine("Não foi encontrado arquivos para importar em 999_converted.");
+        Console.WriteLine("Não foram encontrados arquivos para importar em 999_converted.");
         return;
     }
-
 
     var filesToReplace = Directory.GetFiles(convertedDir, "*", SearchOption.AllDirectories);
 
     foreach (var file in filesToReplace)
     {
-        
         var originalPath = Path.GetRelativePath(convertedDir, file);
 
         if (File.Exists(originalPath))
@@ -174,10 +128,74 @@ static void ImportFiles(string romPath)
         }
     }
 
-
     var newRomName = Path.GetFileName(romPath).Replace(".nds", $"_{DateTime.Now:dd_MM_yyyy_HH_mm_ss}.nds");
 
-    NDSKuriimuRoomTool.ImportRomWithKuriimu(romPath, $@"999\root", newRomName);
+    NDSKuriimuRoomTool.ImportRomWithKuriimu(romPath, $"999\\root", newRomName);
+}
+
+static void ProcessFile(string file, string[] importArgs)
+{
+    
+
+    if (file.Contains(".png") && file.Contains("kanji"))
+        return;
+
+    var fileP = file.Replace(".png", "").Replace(".txt", "").Split(new string[] { filesToImportDir }, StringSplitOptions.RemoveEmptyEntries)[0];
+    var arg = importArgs.FirstOrDefault(x => x.Contains(fileP));
+
+    if (arg is null)
+        return;
+
+    if (arg.Contains("-bge"))
+        arg = arg.Replace("-bge", "-bgi");
+
+    if (arg.Contains("-fe"))
+        arg = arg.Replace("-fe", "-fi");
+
+    if (arg.Contains("-fsbe"))
+        arg = arg.Replace("-fsbe", "-fsbi");
+
+    if (arg.Contains("-dattextv1e"))
+        arg = arg.Replace("-dattextv1e", "-dattextv1i");
+
+    if (arg.Contains("-dattextv4e"))
+        arg = arg.Replace("-dattextv4e", "-dattextv4i");
+
+    if (arg.Contains("-itemstextse"))
+        arg = arg.Replace("-itemstextse", "-itemstextsi");
+
+    if (arg.Contains("-cameratextse"))
+        arg = arg.Replace("-cameratextse", "-cameratextsi");
+
+    if (arg.Contains("-charatextse"))
+        arg = arg.Replace("-charatextse", "-charatextsi");
+
+    if (arg.Contains("*"))
+        return;
+
+    if (arg.Contains("-fi"))
+        ImportFont(arg, file);
+
+    if (arg.Contains("-bgi"))
+        ImportBg(arg, file);
+
+    if (arg.Contains("-fsbi"))
+        ImportFsb(arg, file);
+
+    if (arg.Contains("-dattextv1i"))
+        ImportFileTexts(arg, file);
+
+    if (arg.Contains("-dattextv4i"))
+        ImportSystemTexts(arg, file);
+
+    if (arg.Contains("-itemstextsi"))
+        ImportItemsNames(arg, file);
+
+    if (arg.Contains("-cameratextsi"))
+        ImportCameraTexts(arg, file);
+
+    if (arg.Contains("-charatextsi"))
+        ImportCharaTexts(arg, file);
 }
 
 static void ExportFont(string args)
