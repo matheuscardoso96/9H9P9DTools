@@ -3,7 +3,6 @@ using LibDeImagensGbaDs.Formats.Indexed;
 using LibDeImagensGbaDs.Sprites;
 using LibDeImagensGbaDs.TileMap;
 using LibDeImagensGbaDs.Util;
-using nQuant;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
