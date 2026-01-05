@@ -6,6 +6,7 @@
     <RootNamespace>_9H9P9DTools</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
 	<ItemGroup>
