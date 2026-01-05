@@ -58,6 +58,22 @@ jobs:
             Write-Host "Binaries found:"; $files | ForEach-Object { Write-Host $_.FullName }
           }
 
+      - name: Remove PDB files from publish (optional)
+        shell: pwsh
+        run: |
+          $pub = 'publish\\9H9P9DTools'
+          if (Test-Path $pub) {
+            $pdbs = Get-ChildItem -Path $pub -Recurse -Filter *.pdb -File -ErrorAction SilentlyContinue
+            if ($pdbs) {
+              Write-Host "Removing PDB files from $pub"
+              $pdbs | ForEach-Object { Write-Host "Removing: $_.FullName"; Remove-Item $_.FullName -Force }
+            } else {
+              Write-Host "No PDB files found in $pub"
+            }
+          } else {
+            Write-Host "$pub not found"
+          }
+
       - name: Create annotated tag (based on date + commit) and push
         id: tag
         run: |
