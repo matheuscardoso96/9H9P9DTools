@@ -1,0 +1,1 @@
+9H9P9DTools.exe -i -r "Nine Hours, Nine Persons, Nine Doors (USA).nds" "Nine Hours, Nine Persons, Nine Doors (BR).nds"
