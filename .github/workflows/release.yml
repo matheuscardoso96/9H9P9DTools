@@ -24,11 +24,11 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore dependencies
-        run: dotnet restore 9H9P9DTools/9H9P9DTools.csproj
+      - name: Restore dependencies (include runtime win-x64)
+        run: dotnet restore 9H9P9DTools/9H9P9DTools.csproj --runtime win-x64
 
-      - name: Build (Release)
-        run: dotnet build 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore
+      - name: Build (Release) with runtime win-x64
+        run: dotnet build 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore -r win-x64
 
       - name: Publish (Windows self-contained single-file)
         run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --output ./publish/9H9P9DTools
