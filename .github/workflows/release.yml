@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build-and-release:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -30,30 +30,47 @@ jobs:
       - name: Build (Release)
         run: dotnet build 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore
 
-      - name: Publish (output to publish/9H9P9DTools)
-        run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore --output ./publish/9H9P9DTools
-
-      - name: List published files
+      - name: Publish (Windows self-contained single-file)
         run: |
-          echo "Publish output:" && ls -la publish || true
+          dotnet publish 9H9P9DTools/9H9P9DTools.csproj \
+            --configuration Release \
+            --no-restore \
+            -r win-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            --output ./publish/9H9P9DTools
 
-      - name: Create annotated tag and push
+      - name: Create annotated tag (based on date + commit) and push
         id: tag
         run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          TAG="v${{ github.run_number }}-${SHORT_SHA}"
-          echo "Tag to create: $TAG"
+          $short = git rev-parse --short HEAD
+          $date = (Get-Date).ToString('yyyyMMdd')
+          $tag = "v${date}-$short"
+          Write-Host "Tag to create: $tag"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "Automated release $TAG from branch main"
-          git push origin "$TAG"
-          echo "TAG_NAME=$TAG" >> $GITHUB_ENV
-        shell: bash
+          git tag -a $tag -m "Automated release $tag from branch main"
+          git push origin $tag
+          echo "TAG_NAME=$tag" >> $env:GITHUB_ENV
+        shell: pwsh
 
-      - name: Create Release and upload published files
+      - name: List published files
+        run: dir publish\9H9P9DTools || echo "no files"
+
+      - name: Pack published files into zip named by tag
+        run: |
+          if (-not $env:TAG_NAME) { Write-Host "TAG_NAME not set"; exit 1 }
+          $zipPath = "publish\${env:TAG_NAME}.zip"
+          if (Test-Path $zipPath) { Remove-Item $zipPath }
+          Compress-Archive -Path publish\9H9P9DTools\* -DestinationPath $zipPath
+          Write-Host "Created $zipPath"
+        shell: pwsh
+
+      - name: Create Release and upload published zip
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ env.TAG_NAME }}
-          files: ./publish/9H9P9DTools/**
+          files: publish/${{ env.TAG_NAME }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
