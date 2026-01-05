@@ -10,12 +10,16 @@ permissions:
 
 jobs:
   build-and-release:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
 
-      - name: Setup .NET  (use .NET 8 for build)
+      - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
@@ -29,15 +33,24 @@ jobs:
       - name: Publish
         run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore --output ./publish
 
-      - name: Upload artifacts (for workflow)
-        uses: actions/upload-artifact@v4
-        with:
-          name: 9H9P9DTools-publish
-          path: ./publish
+      - name: Create annotated tag and push
+        id: tag
+        run: |
+          # Tag naming: v<run_number>-<short-sha>, altere se preferir outro formato
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          TAG="v${{ github.run_number }}-${SHORT_SHA}"
+          echo "Tag to create: $TAG"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Automated release $TAG from branch main"
+          git push origin "$TAG"
+          echo "TAG_NAME=$TAG" >> $GITHUB_ENV
+        shell: bash
 
       - name: Create GitHub release and attach published files
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
+          tag: ${{ env.TAG_NAME }}
           files: ./publish/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
