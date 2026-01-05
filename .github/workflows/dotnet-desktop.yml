@@ -3,40 +3,41 @@ name: Build and Release
 on:
   push:
     branches:
-      - main # Dispara o workflow em cada push para a branch main
+      - main
+
+permissions:
+  contents: write
 
 jobs:
-  build:
-    name: Build and Release
+  build-and-release:
     runs-on: windows-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 8.0.x # Configura o .NET 8.0
+      - name: Setup .NET  (use .NET 8 for build)
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
-      run: dotnet restore 9H9P9DTools/9H9P9DTools.csproj
+      - name: Restore dependencies
+        run: dotnet restore 9H9P9DTools/9H9P9DTools.csproj
 
-    - name: Build project
-      run: dotnet build 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore
+      - name: Build (Release)
+        run: dotnet build 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore
 
-    - name: Publish project
-      run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --output ./publish --no-restore
+      - name: Publish
+        run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore --output ./publish
 
-    - name: Archive release
-      uses: actions/upload-artifact@v3
-      with:
-        name: 9H9P9DTools-release
-        path: ./publish
+      - name: Upload artifacts (for workflow)
+        uses: actions/upload-artifact@v4
+        with:
+          name: 9H9P9DTools-publish
+          path: ./publish
 
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: ./publish/*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub release and attach published files
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./publish/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
