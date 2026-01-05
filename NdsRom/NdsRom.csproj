@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Kaligraphy">
+      <HintPath>Kaligraphy.dll</HintPath>
+    </Reference>
+    <Reference Include="Kaligraphy.Contract">
+      <HintPath>Kaligraphy.Contract.dll</HintPath>
+    </Reference>
+    <Reference Include="Kanvas">
+      <HintPath>Kanvas.dll</HintPath>
+    </Reference>
+    <Reference Include="Kanvas.Contract">
+      <HintPath>Kanvas.Contract.dll</HintPath>
+    </Reference>
+    <Reference Include="Komponent">
+      <HintPath>Komponent.dll</HintPath>
+    </Reference>
+    <Reference Include="Komponent.Contract">
+      <HintPath>Komponent.Contract.dll</HintPath>
+    </Reference>
+    <Reference Include="Kompression">
+      <HintPath>Kompression.dll</HintPath>
+    </Reference>
+    <Reference Include="Kompression.Contract">
+      <HintPath>Kompression.Contract.dll</HintPath>
+    </Reference>
+    <Reference Include="Konnect">
+      <HintPath>Konnect.dll</HintPath>
+    </Reference>
+    <Reference Include="Konnect.Contract">
+      <HintPath>Konnect.Contract.dll</HintPath>
+    </Reference>
+    <Reference Include="Kryptography">
+      <HintPath>Kryptography.dll</HintPath>
+    </Reference>
+    <Reference Include="Kryptography.Contract">
+      <HintPath>Kryptography.Contract.dll</HintPath>
+    </Reference>
+    <Reference Include="plugin_nintendo">
+      <HintPath>plugin_nintendo.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
