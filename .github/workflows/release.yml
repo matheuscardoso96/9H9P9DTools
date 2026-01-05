@@ -31,15 +31,7 @@ jobs:
         run: dotnet build 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore
 
       - name: Publish (Windows self-contained single-file)
-        run: |
-          dotnet publish 9H9P9DTools/9H9P9DTools.csproj \
-            --configuration Release \
-            --no-restore \
-            -r win-x64 \
-            --self-contained true \
-            -p:PublishSingleFile=true \
-            -p:IncludeNativeLibrariesForSelfExtract=true \
-            --output ./publish/9H9P9DTools
+        run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --output ./publish/9H9P9DTools
 
       - name: Create annotated tag (based on date + commit) and push
         id: tag
