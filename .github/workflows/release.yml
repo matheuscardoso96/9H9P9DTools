@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -25,14 +24,39 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore dependencies (include runtime win-x64)
+      - name: Restore dependencies (include RID)
         run: dotnet restore 9H9P9DTools/9H9P9DTools.csproj --runtime win-x64
 
       - name: Build (Release) with runtime win-x64
         run: dotnet build 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore -r win-x64
 
-      - name: Publish (Windows self-contained single-file)
-        run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --output ./publish/9H9P9DTools
+      - name: Publish (Windows self-contained single-file) with verbose output
+        run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --output ./publish/9H9P9DTools --verbosity detailed
+
+      - name: Dotnet info
+        run: dotnet --info
+
+      - name: List published files recursively
+        shell: pwsh
+        run: |
+          Write-Host "Listing publish directory contents:";
+          if (Test-Path publish\9H9P9DTools) {
+            Get-ChildItem -Path publish\9H9P9DTools -Recurse | ForEach-Object { Write-Host $_.FullName }
+          } else {
+            Write-Host "Publish folder not found";
+          }
+
+      - name: Verify exe exists
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path publish\9H9P9DTools -Recurse -File -Include *.exe,*.dll,*.so -ErrorAction SilentlyContinue
+          if (-not $files) {
+            Write-Host 'No binaries found in publish folder. Failing job to avoid empty release.'
+            Get-ChildItem publish -Recurse -Force | ForEach-Object { Write-Host $_.FullName }
+            exit 1
+          } else {
+            Write-Host "Binaries found:"; $files | ForEach-Object { Write-Host $_.FullName }
+          }
 
       - name: Create annotated tag (based on date + commit) and push
         id: tag
@@ -47,9 +71,6 @@ jobs:
           git push origin $tag
           echo "TAG_NAME=$tag" >> $env:GITHUB_ENV
         shell: pwsh
-
-      - name: List published files
-        run: dir publish\9H9P9DTools || echo "no files"
 
       - name: Pack published files into zip named by tag
         run: |
