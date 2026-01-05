@@ -234,7 +234,7 @@ namespace Lib999.Text
 
         private void InitEventCommands()
         {
-            var commandTbl = File.ReadLines("commandsPC.tbl");
+            var commandTbl = File.ReadLines(@"EssentialFiles\commandsPC.tbl");
 
             foreach (var item in commandTbl)
             {
@@ -257,9 +257,9 @@ namespace Lib999.Text
 
         private void InitSjisTables()
         {
-            SjisCompTbl = File.ReadAllBytes("Sjis_Comp_Tbl.bin").Select(x => (int)x).ToArray();
+            SjisCompTbl = File.ReadAllBytes(@"EssentialFiles\Sjis_Comp_Tbl.bin").Select(x => (int)x).ToArray();
 
-            using (BinaryReader br = new BinaryReader(File.OpenRead("Sjis_Decomp_Tbl.bin")))
+            using (BinaryReader br = new BinaryReader(File.OpenRead(@"EssentialFiles\Sjis_Decomp_Tbl.bin")))
             {
                 while (br.BaseStream.Position < br.BaseStream.Length)
                     SjisDecompTbl.Add(br.ReadInt16());

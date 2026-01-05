@@ -806,7 +806,7 @@ namespace Lib999.Text
         {
             if (EventCommands.Count == 0)
             {
-                var commandTbl = File.ReadLines("commands.tbl");
+                var commandTbl = File.ReadLines(@"EssentialFiles\commands.tbl");
 
                 foreach (var item in commandTbl)
                 {
@@ -833,9 +833,9 @@ namespace Lib999.Text
 
         private void InitSjisTables()
         {
-            SjisCompTbl = File.ReadAllBytes("Sjis_Comp_Tbl.bin").Select(x => (int)x).ToArray();
+            SjisCompTbl = File.ReadAllBytes(@"EssentialFiles\Sjis_Comp_Tbl.bin").Select(x => (int)x).ToArray();
 
-            using (BinaryReader br = new BinaryReader(File.OpenRead("Sjis_Decomp_Tbl.bin")))
+            using (BinaryReader br = new BinaryReader(File.OpenRead(@"EssentialFiles\Sjis_Decomp_Tbl.bin")))
             {
                 while (br.BaseStream.Position < br.BaseStream.Length)
                     SjisDecompTbl.Add(br.ReadInt16());
@@ -900,25 +900,35 @@ namespace Lib999.Text
         public void ReplaceDialogsWithIdsSimple(List<Dialog999> dialogsToReplace)
         {
             InitSpecialCharsCode();
-
-            foreach (var item in Dialogs)
+            var itemToConvert = string.Empty;
+            try
             {
-                var toReplace = dialogsToReplace.FirstOrDefault(x => x.Id == item.Id);
-
-               
-                if (toReplace != null)
+                foreach (var item in Dialogs)
                 {
-                    if (!(toReplace?.IsCommand).GetValueOrDefault())
+
+                    var toReplace = dialogsToReplace.FirstOrDefault(x => x.Id == item.Id);
+
+
+                    if (toReplace != null)
                     {
-                        item.Text = toReplace.Text;
-                        SetDliag999TextInBytes(item);
+                        if (!(toReplace?.IsCommand).GetValueOrDefault())
+                        {
+                            itemToConvert = toReplace.Text;
+                            item.Text = toReplace.Text;
+                            SetDliag999TextInBytes(item);
+                        }
+
+
                     }
 
-                   
                 }
-
-               
             }
+            catch
+            {
+
+                throw new Exception($"Falha ao converter diálogo: {itemToConvert}");
+            }
+           
 
         }
 
@@ -1039,7 +1049,6 @@ namespace Lib999.Text
 
         private void SetDliag999TextInBytes(Dialog999 dialog)
         {
-            Console.WriteLine($"Convertendo texto para bytes: {dialog.Text}\r\n----------------------------");
             List<byte> bytes = new List<byte>();
 
             for (int i = 0; i < dialog.Text.Length; i++)

@@ -13,13 +13,11 @@ namespace Lib999
         public List<uint> TopValues { get; set; } = new();
         public VLQTable(BinaryReader br)
         {
+
             var position = br.BaseStream.Position;
             byte unknown = br.ReadByte();
-            while (unknown != 0xAA)
+            while (br.BaseStream.Position < br.BaseStream.Length)
             {
-                if (br.BaseStream.Position == br.BaseStream.Length)
-                    break;
-
                 DataVLQ.Add(unknown);
                 unknown = br.ReadByte();
             }
@@ -80,12 +78,8 @@ namespace Lib999
         {
             var t = SirUtils.EncodeVarint(0xBC);
             byte code = br.ReadByte();
-            while (code != 0xAA)
+            while (br.BaseStream.Position < br.BaseStream.Length)
             {
-                if (br.BaseStream.Position == br.BaseStream.Length)
-                    break;
-                    
-
                 if (code == 0)
                      break;
 
