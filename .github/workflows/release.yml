@@ -30,13 +30,16 @@ jobs:
       - name: Build (Release)
         run: dotnet build 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore
 
-      - name: Publish
-        run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore --output ./publish
+      - name: Publish (output to publish/9H9P9DTools)
+        run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore --output ./publish/9H9P9DTools
+
+      - name: List published files
+        run: |
+          echo "Publish output:" && ls -la publish || true
 
       - name: Create annotated tag and push
         id: tag
         run: |
-          # Tag naming: v<run_number>-<short-sha>, altere se preferir outro formato
           SHORT_SHA=$(git rev-parse --short HEAD)
           TAG="v${{ github.run_number }}-${SHORT_SHA}"
           echo "Tag to create: $TAG"
@@ -47,10 +50,10 @@ jobs:
           echo "TAG_NAME=$TAG" >> $GITHUB_ENV
         shell: bash
 
-      - name: Create GitHub release and attach published files
+      - name: Create Release and upload published files
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ env.TAG_NAME }}
-          files: ./publish/**
+          files: ./publish/9H9P9DTools/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
