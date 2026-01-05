@@ -1,40 +1,40 @@
-﻿// See https://aka.ms/new-console-template for more information
-using Lib999.Font;
+﻿using Lib999.Font;
 using Lib999.Image;
 using Lib999.Text;
+using NdsRom.NRom;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 if (args.Length > 0)
 {
 
-    if (args[0] == "-e")
+    if (args.Length == 3 && args[0] == "-e" && args[1] == "-r" && args[2].Contains(".nds"))
     {
-        ExportFiles();
+       await ExportFiles(args[2]);
     }
-    else if (args[0] == "-i")
+    else if (args.Length == 3 && args[0] == "-i" && args[1] == "-r" && args[2].Contains(".nds"))
     {
-        ImportFiles();
+        ImportFiles(args[2]);
     }
 
-    Console.WriteLine("Fim da operação.");
+    Console.WriteLine("Fim da operação, aperte qualquer letra para encerrar.");
     Console.ReadKey();
 }
 
 
 
-static void ExportFiles()
+async static Task ExportFiles(string romPath)
 {
-
-    var exportArgs = File.ReadAllLines("fileExportList.txt").ToList();
-
-    var b11Path = @"999\root\scr\b11_jp.fsb";
-    exportArgs.Add($"{b11Path},-fsbe");
-
+    if (!Directory.Exists("999") || Directory.GetFiles("999", "*", SearchOption.AllDirectories).Length == 0)
+    {
+        Console.WriteLine("Exportando rom para a pasta 999...");
+        await NDSKuriimuRoomTool.ExportRomWithKuriimu(romPath, @"999\root");
+    }
+   
+    var exportArgs = File.ReadAllLines(@"EssentialFiles\fileExportList.txt").ToList();
 
     foreach (var file in exportArgs)
     {
-
 
         if (file.Contains("*"))
             continue;
@@ -64,13 +64,22 @@ static void ExportFiles()
             ExportCharaTexts(file);
     }
 
+    var destDir = "999_edited";
+    Directory.CreateDirectory(destDir);
 }
 
 const string filesToImportDir = "999_edited\\";
 
-static void ImportFiles()
+static void ImportFiles(string romPath)
 {
-    var importArgs = File.ReadAllLines("fileExportList.txt");
+
+    if (!File.Exists(romPath))
+    {
+        Console.WriteLine($"Rom não econtrada. Caminho {romPath}, vefique o arquivo importação .bat.");
+        return;
+    }
+    
+    var importArgs = File.ReadAllLines(@"EssentialFiles\fileExportList.txt");
     var files = Directory.GetFiles(filesToImportDir, "*", SearchOption.AllDirectories);
 
 
@@ -137,6 +146,38 @@ static void ImportFiles()
             ImportCharaTexts(arg, file);
     }
 
+
+    var convertedDir = "999_converted";
+
+    if (!Directory.Exists(convertedDir))
+    {
+        Console.WriteLine("Não foi encontrado arquivos para importar em 999_converted.");
+        return;
+    }
+
+
+    var filesToReplace = Directory.GetFiles(convertedDir, "*", SearchOption.AllDirectories);
+
+    foreach (var file in filesToReplace)
+    {
+        
+        var originalPath = Path.GetRelativePath(convertedDir, file);
+
+        if (File.Exists(originalPath))
+        {
+            File.Copy(file, originalPath, overwrite: true);
+            Console.WriteLine($"Replaced: {originalPath}");
+        }
+        else
+        {
+            Console.WriteLine($"Arquivo não encontrado no diretório original: {originalPath}");
+        }
+    }
+
+
+    var newRomName = Path.GetFileName(romPath).Replace(".nds", $"_{DateTime.Now:dd_MM_yyyy_HH_mm_ss}.nds");
+
+    NDSKuriimuRoomTool.ImportRomWithKuriimu(romPath, $@"999\root", newRomName);
 }
 
 static void ExportFont(string args)
@@ -181,7 +222,7 @@ static void ExportFsb(string args)
     {
         Console.WriteLine($"Exportando fsb: {Path.GetFileName(argsSplit[0])}");
         var texts = new FsbTexts(argsSplit[0]);
-        texts.FsbToTxt(argsSplit[0], true);
+        texts.FsbToTxt(argsSplit[0], false);
 
     }
 
@@ -205,11 +246,6 @@ static void ImportFsb(string args, string txtfilePath)
         Console.WriteLine($"Falha ao converter texto anterior para bytes.\r\nArquivo: {Path.GetFileName(txtfilePath)}\r\nErro: {ex.Message}");
         Console.WriteLine("Pressione Enter para continuar.");
         Console.ForegroundColor = ConsoleColor.White;
-        Console.ReadKey();
-    }
-    finally
-    {
-
     }
 
 }
@@ -224,8 +260,19 @@ static void ExportFileTexts(string args)
 static void ImportFileTexts(string args, string txtfilePath)
 {
     var argsSplit = args.Replace(" ", "").Split(',');
-    var texts = new FileTexts(argsSplit[0], txtfilePath);
-    Console.WriteLine($"Importando file text: {Path.GetFileName(argsSplit[0])}");
+
+    try
+    {
+        
+        var texts = new FileTexts(argsSplit[0], txtfilePath);
+        Console.WriteLine($"Importando file text: {Path.GetFileName(argsSplit[0])}");
+    }
+    catch
+    {
+
+        Console.WriteLine($"Falha ao converter arquivo: {Path.GetFileName(argsSplit[0])}");
+    }
+   
 }
 
 static void ExportSystemTexts(string args)
@@ -238,8 +285,18 @@ static void ExportSystemTexts(string args)
 static void ImportSystemTexts(string args, string txtfilePath)
 {
     var argsSplit = args.Replace(" ", "").Split(',');
-    var texts = new SystemTexts(argsSplit[0], txtfilePath);
-    Console.WriteLine($"Importando SirTextsV4: {Path.GetFileName(argsSplit[0])}");
+    try
+    {
+        
+        var texts = new SystemTexts(argsSplit[0], txtfilePath);
+        Console.WriteLine($"Importando SirTextsV4: {Path.GetFileName(argsSplit[0])}");
+    }
+    catch (Exception)
+    {
+
+        Console.WriteLine($"Falha ao converter arquivo: {Path.GetFileName(argsSplit[0])}");
+    }
+   
 }
 
 static void ExportItemsNames(string args)
@@ -252,8 +309,19 @@ static void ExportItemsNames(string args)
 static void ImportItemsNames(string args, string txtfilePath)
 {
     var argsSplit = args.Replace(" ", "").Split(',');
-    var texts = new ItemsNames(argsSplit[0], txtfilePath);
-    Console.WriteLine($"Importando Nomes de Itens: {Path.GetFileName(argsSplit[0])}");
+    
+    try
+    {
+        
+        var texts = new ItemsNames(argsSplit[0], txtfilePath);
+        Console.WriteLine($"Importando Nomes de Itens: {Path.GetFileName(argsSplit[0])}");
+    }
+    catch (Exception)
+    {
+
+        Console.WriteLine($"Falha ao converter arquivo: {Path.GetFileName(argsSplit[0])}");
+    }
+    
 }
 
 static void ExportCameraTexts(string args)
@@ -266,8 +334,19 @@ static void ExportCameraTexts(string args)
 static void ImportCameraTexts(string args, string txtfilePath)
 {
     var argsSplit = args.Replace(" ", "").Split(',');
-    var texts = new CameraTexts(argsSplit[0], txtfilePath);
-    Console.WriteLine($"Importando Textos de Câmera: {Path.GetFileName(argsSplit[0])}");
+
+    try
+    {
+        
+        var texts = new CameraTexts(argsSplit[0], txtfilePath);
+        Console.WriteLine($"Importando Textos de Câmera: {Path.GetFileName(argsSplit[0])}");
+    }
+    catch (Exception)
+    {
+
+        Console.WriteLine($"Falha ao converter arquivo: {Path.GetFileName(argsSplit[0])}");
+    }
+    
 }
 
 static void ExportCharaTexts(string args)
@@ -280,7 +359,17 @@ static void ExportCharaTexts(string args)
 static void ImportCharaTexts(string args, string txtfilePath)
 {
     var argsSplit = args.Replace(" ", "").Split(',');
-    var texts = new CharaTexts(argsSplit[0], txtfilePath);
-    Console.WriteLine($"Importando Textos de Chara: {Path.GetFileName(argsSplit[0])}");
+
+    try
+    {
+        var texts = new CharaTexts(argsSplit[0], txtfilePath);
+        Console.WriteLine($"Importando Textos de Chara: {Path.GetFileName(argsSplit[0])}");
+    }
+    catch (Exception)
+    {
+
+        Console.WriteLine($"Falha ao converter arquivo: {Path.GetFileName(argsSplit[0])}");
+    }
+    
 }
 
