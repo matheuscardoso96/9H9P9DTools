@@ -24,14 +24,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore dependencies (include RID)
-        run: dotnet restore 9H9P9DTools/9H9P9DTools.csproj --runtime win-x64
+      - name: Restore dependencies
+        run: dotnet restore 9H9P9DTools/9H9P9DTools.csproj
 
-      - name: Build (Release) with runtime win-x64
-        run: dotnet build 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore -r win-x64
+      - name: Build (Release)
+        run: dotnet build 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore
 
-      - name: Publish (Windows self-contained single-file) with verbose output
-        run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --output ./publish/9H9P9DTools --verbosity detailed
+      - name: Publish (framework-dependent, requires .NET runtime installed on target)
+        run: dotnet publish 9H9P9DTools/9H9P9DTools.csproj --configuration Release --no-restore --output ./publish/9H9P9DTools --verbosity minimal
 
       - name: Dotnet info
         run: dotnet --info
@@ -46,10 +46,10 @@ jobs:
             Write-Host "Publish folder not found";
           }
 
-      - name: Verify exe exists
+      - name: Verify exe/dll exists
         shell: pwsh
         run: |
-          $files = Get-ChildItem -Path publish\9H9P9DTools -Recurse -File -Include *.exe,*.dll,*.so -ErrorAction SilentlyContinue
+          $files = Get-ChildItem -Path publish\9H9P9DTools -Recurse -File -Include *.exe,*.dll -ErrorAction SilentlyContinue
           if (-not $files) {
             Write-Host 'No binaries found in publish folder. Failing job to avoid empty release.'
             Get-ChildItem publish -Recurse -Force | ForEach-Object { Write-Host $_.FullName }
