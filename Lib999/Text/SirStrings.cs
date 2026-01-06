@@ -546,31 +546,17 @@ namespace Lib999.Text
             
             br.BaseStream.Position = offset;
             StringBuilder text = new();
-
-            if (offset == 0xb8cb)
-            {
-
-            }
             int code;
             do
             {
-                
-
                 code = br.ReadByte();
-                if (code == 0x8F)
-                {
 
-                }
 
-                if ((code >= 0x20 && code < 0xF2) && !especialCodes.Contains(code)) //|| code >= 0xE0 && code < 0xFD)
+                if ((code >= 0x20 && code < 0xFE) && !especialCodes.Contains(code)) //|| code >= 0xE0 && code < 0xFD)
                     text.Append(Convert.ToChar(code));
                 else if (code >= 0xA1 && code <= 0xDD)
                 {
                     var index = Array.IndexOf(SjisCompTbl, code);
-                    //var sjisCode = SjisDecompTbl[index];
-                    //var bytes = BitConverter.GetBytes(sjisCode).Take(2).ToArray();
-                    //var tex = JapaneseEncoding.GetString(bytes);
-                    //text.Append(tex);
 
                     var tex = code;
                     text.Append((char)tex);
