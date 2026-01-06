@@ -74,24 +74,27 @@ jobs:
             Write-Host "$pub not found"
           }
 
-      - name: Create annotated tag (based on date + commit) and push
+      - name: Create annotated tag (based on project + date + commit) and push
         id: tag
         run: |
+          $project = '9H9P9DTools'
           $short = git rev-parse --short HEAD
           $date = (Get-Date).ToString('yyyyMMdd')
-          $tag = "v${date}-$short"
+          $tag = "$project_${date}-$short"
           Write-Host "Tag to create: $tag"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a $tag -m "Automated release $tag from branch main"
           git push origin $tag
           echo "TAG_NAME=$tag" >> $env:GITHUB_ENV
+          echo "PROJECT_NAME=$project" >> $env:GITHUB_ENV
         shell: pwsh
 
-      - name: Pack published files into zip named by tag
+      - name: Pack published files into zip named by project + tag
         run: |
           if (-not $env:TAG_NAME) { Write-Host "TAG_NAME not set"; exit 1 }
-          $zipPath = "publish\${env:TAG_NAME}.zip"
+          $zipName = "${env:PROJECT_NAME}_${env:TAG_NAME}.zip"
+          $zipPath = Join-Path -Path 'publish' -ChildPath $zipName
           if (Test-Path $zipPath) { Remove-Item $zipPath }
           Compress-Archive -Path publish\9H9P9DTools\* -DestinationPath $zipPath
           Write-Host "Created $zipPath"
@@ -102,6 +105,6 @@ jobs:
         with:
           tag_name: ${{ env.TAG_NAME }}
           name: ${{ env.TAG_NAME }}
-          files: publish/${{ env.TAG_NAME }}.zip
+          files: publish/${{ env.PROJECT_NAME }}_${{ env.TAG_NAME }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
