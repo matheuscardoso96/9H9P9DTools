@@ -11,10 +11,12 @@ public static class NDSKuriimuRoomTool
 
         var dest = $@"{destPath}";
         Directory.CreateDirectory(dest);
+        var destCopy = $@"c_{destPath}";
+        Directory.CreateDirectory(destCopy);
 
         using (var fs = new FileStream(inputPath, FileMode.Open, FileAccess.Read))
         {
-            var nds = new Nds();
+            var nds = new NDS();
             var result = nds.Load(fs);
 
             foreach (var file in result)
@@ -23,13 +25,15 @@ public static class NDSKuriimuRoomTool
                 if (file.FileSize > 0)
                 {
                     var dirDest = $@"{dest}{Path.GetDirectoryName(file.FilePath.ToString())}";
+                    var dirDestCopy = $@"{destCopy}{Path.GetDirectoryName(file.FilePath.ToString())}";
                     var fileName = Path.GetFileName(file.FilePath.ToString());
                     Directory.CreateDirectory(dirDest);
+                    Directory.CreateDirectory(dirDestCopy);
                     var fileData = await file.GetFileData();
-                    // convert fileData stream to byte array
                     var fileBytes = new byte[fileData.Length];
                     fileData.Read(fileBytes, 0, fileBytes.Length);
                     File.WriteAllBytes($@"{dirDest}\{fileName}", fileBytes);
+                    File.WriteAllBytes($@"{dirDestCopy}\{fileName}", fileBytes);
                 }
                
 
@@ -43,10 +47,16 @@ public static class NDSKuriimuRoomTool
 
         using (var fs = new FileStream(originalRomPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
         {
-            var nds = new Nds();
+            var nds = new NDS();
             var result = nds.Load(fs);
+
+          
             foreach (var file in result)
             {
+                if (file.FilePath.ToString().Contains("arm9"))
+                {
+
+                }
                 var modifiedFilePath = $"{modifiedFilesPath}{file.FilePath.ToString().Replace(@"/", @"\")}" ;
                 if (File.Exists(modifiedFilePath) && file.FileSize > 0)
                 {
@@ -69,8 +79,8 @@ public static class NDSKuriimuRoomTool
         using (var oldFs = new FileStream(oldRomPath, FileMode.Open, FileAccess.Read))
         using (var newFs = new FileStream(newRomPath, FileMode.Open, FileAccess.Read))
         {
-            var oldNds = new Nds();
-            var newNds = new Nds();
+            var oldNds = new NDS();
+            var newNds = new NDS();
 
             var oldFiles = oldNds.Load(oldFs);
             var newFiles = newNds.Load(newFs);
