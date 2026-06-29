@@ -290,6 +290,12 @@ namespace Lib999.Text
                     EventScriptFinal.Append(ev?.Description);
                     EventScriptFinal.Append(ev?.FinalDesc);
                 }
+                else if (ev.Description.Contains("comand0x33"))
+                {
+                    Strings.Add($"<ID: {ev.Args[0]}>\r\n{Dialogs[(ev.Args[0] << 2) / 4].Text}");
+                    EventScriptFinal.Append(ev?.Description);
+                    EventScriptFinal.Append(ev?.FinalDesc);
+                }
                 else if (ev.Description.Contains("comand0x0D") && ev.Args[0] == 0xF4)
                 {
                     var codes = ev.FinalDesc.Split(" ");
@@ -348,6 +354,11 @@ namespace Lib999.Text
 
                 }
             }
+            if (((System.IO.FileStream)br.BaseStream).Name.Contains("c21."))
+            {
+
+            }
+          
 
             foreach (var ev in EventDialogs)
             {
@@ -380,23 +391,32 @@ namespace Lib999.Text
                    
                    
                 }
-                //else if (ev.Description.Contains("0x33"))
-                //{
-                //    var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
-                //    Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
-                   
-                //    var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
-                //    eventOffset0.HasString = true;
-                //    //EventScriptFinal.Append(ev?.Description);
-                    
-                    
-                //    EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"{dlg}"));
-                    
-                //    //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[{dlg}]"));
-                //    // EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[ID: {ev.Args[0]}, EventOffset : {eventOffset0.Offset.ToString("X")}] [{dlg}]"));
+                else if (ev.Description.Contains("comand0x33"))
+                {
+                    try
+                    {
+                        var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
+                        Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
 
+                        var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
+                        eventOffset0.HasString = true;
+                        //EventScriptFinal.Append(ev?.Description);
+
+
+                        EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}", $"{dlg}"));
+                    }
+                    catch (Exception)
+                    {
+
+                        throw;
+                    }
                    
-                //}
+
+                    //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[{dlg}]"));
+                    // EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[ID: {ev.Args[0]}, EventOffset : {eventOffset0.Offset.ToString("X")}] [{dlg}]"));
+
+
+                }
                 else if (ev.Description.Contains("comand0x34"))
                 {
                 

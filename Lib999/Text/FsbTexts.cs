@@ -379,11 +379,11 @@ namespace Lib999.Text
                 var dlg999 = new Dialog999(idValue, 0, item.Replace(id, ""), 0);
 
 
-                if (dlg999.Text.Length > 0 && dlg999.Text[0] == ' ')
-                {
-                    //remove first char space
-                    dlg999.Text = dlg999.Text.Substring(1);
-                }
+                //if (dlg999.Text.Length > 0 && dlg999.Text[0] == ' ')
+                //{
+                //    //remove first char space
+                //    dlg999.Text = dlg999.Text.Substring(1);
+                //}
                 string output = Regex.Replace(dlg999.Text, "<.*?>", "");
 
                 if (string.IsNullOrEmpty(output))

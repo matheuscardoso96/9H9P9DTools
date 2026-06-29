@@ -145,12 +145,12 @@ namespace Lib999.Text
                         OffsetsWithStrings.Add(new OffsetWithString((uint)br.BaseStream.Position - 2, Convert.ToUInt32(sb.ToString()), false, "ushort"));
                     }
 
-                    //if (Description.Contains("0x33"))
-                    //{
+                    if (Description.Contains("0x33"))
+                    {
 
-                    //    FinalDesc = $": {sb}>\r\n";
-                    //    OffsetsWithStrings.Add(new OffsetWithString((uint)br.BaseStream.Position - 2, Convert.ToUInt32(sb.ToString()), false, "ushort"));
-                    //}
+                        FinalDesc = $": {sb}>\r\n";
+                        OffsetsWithStrings.Add(new OffsetWithString((uint)br.BaseStream.Position - 2, Convert.ToUInt32(sb.ToString()), false, "ushort"));
+                    }
 
                     else
                         FinalDesc = $": {sb}>";
