@@ -9,10 +9,13 @@ namespace Lib999
     public class VLQTable
     {
         public List<byte> DataVLQ { get; set; } = new();
+        public List<byte> DataVLQOg { get; set; } = new();
         public List<uint> DecompressedValues { get; set; } = new();
+        public List<uint> OgDecompressedValuesValues { get; set; } = new();
         public List<uint> TopValues { get; set; } = new();
-        public VLQTable(BinaryReader br)
+        public VLQTable(BinaryReader br, string fname = "")
         {
+            
 
             var position = br.BaseStream.Position;
             byte unknown = br.ReadByte();
@@ -21,7 +24,7 @@ namespace Lib999
                 DataVLQ.Add(unknown);
                 unknown = br.ReadByte();
             }
-
+            DataVLQOg = DataVLQ;
             /*if (unknown != 0x4)
             {
                 var r2 = 0;
@@ -42,7 +45,7 @@ namespace Lib999
             }*/
 
             br.BaseStream.Position = position;
-            ReadOffestArea(br);
+            ReadOffestArea(br, fname);
 
             //var lists = new Dictionary<uint, List<uint>>();
             //lists.Add(0, new List<uint>());
@@ -50,7 +53,7 @@ namespace Lib999
             //var key = 0u;
             //foreach (var item in DecompressedValues)
             //{
-            
+
             //    //if (lists.ContainsKey(key)) { continue; }
 
             //    if (item != 4)
@@ -59,12 +62,12 @@ namespace Lib999
             //      lists.Add((uint)key, new List<uint>());
             //       continue;
             //    }
-               
+
 
             //    lists[key].Add(item);
-          
-            //}
 
+            //}
+            OgDecompressedValuesValues = DecompressedValues;
             TopValues = DecompressedValues.Where(x => x > 4).ToList();
         }
 
@@ -74,24 +77,25 @@ namespace Lib999
             DataVLQ = new List<byte>();
         }
 
-        public void ReadOffestArea(BinaryReader br) 
+        public void ReadOffestArea(BinaryReader br, string fname="") 
         {
+
             var t = SirUtils.EncodeVarint(0xBC);
-            byte code = br.ReadByte();
             while (br.BaseStream.Position < br.BaseStream.Length)
             {
+                byte code = br.ReadByte();
+
                 if (code == 0)
-                     break;
+                    break;
 
-                var bytesToRead = new List<byte>();
-                bytesToRead.Add(code);
+                var bytesToRead = new List<byte> { code };
 
-                while (code > 0x80)
+                while ((code & 0x80) != 0)
                 {
                     code = br.ReadByte();
                     bytesToRead.Add(code);
                 }
-                code = br.ReadByte();
+
                 var decoded = SirUtils.DecodeVarint(bytesToRead.ToArray());
                 DecompressedValues.Add(decoded);
             }

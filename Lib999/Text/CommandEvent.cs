@@ -145,7 +145,7 @@ namespace Lib999.Text
                         OffsetsWithStrings.Add(new OffsetWithString((uint)br.BaseStream.Position - 2, Convert.ToUInt32(sb.ToString()), false, "ushort"));
                     }
 
-                    if (Description.Contains("0x33"))
+                    if (Description.Contains("JUMP_TO_SECTION"))
                     {
 
                         FinalDesc = $": {sb}>\r\n";

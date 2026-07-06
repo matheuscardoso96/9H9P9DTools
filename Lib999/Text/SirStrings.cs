@@ -290,7 +290,7 @@ namespace Lib999.Text
                     EventScriptFinal.Append(ev?.Description);
                     EventScriptFinal.Append(ev?.FinalDesc);
                 }
-                else if (ev.Description.Contains("comand0x33"))
+                else if (ev.Description.Contains("JUMP_TO_SECTION"))
                 {
                     Strings.Add($"<ID: {ev.Args[0]}>\r\n{Dialogs[(ev.Args[0] << 2) / 4].Text}");
                     EventScriptFinal.Append(ev?.Description);
@@ -354,10 +354,6 @@ namespace Lib999.Text
 
                 }
             }
-            if (((System.IO.FileStream)br.BaseStream).Name.Contains("c21."))
-            {
-
-            }
           
 
             foreach (var ev in EventDialogs)
@@ -384,25 +380,31 @@ namespace Lib999.Text
                 {
                     var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
                     Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
-                   
+                    if (dlg.Contains("∴") )
+                    {
+                        EventScriptFinal.Append($"<SELECT_RESPONSE>\r\n");
+                    }
+                    else
+                    {
+                        EventScriptFinal.Append($"{dlg}\r\n");
+                    }
                     var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
                     eventOffset0.HasString = true;
-                    EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"{dlg}"));
+                   
                    
                    
                 }
-                else if (ev.Description.Contains("comand0x33"))
+                else if (ev.Description.Contains("JUMP_TO_SECTION"))
                 {
                     try
                     {
                         var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
                         Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
-
                         var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
                         eventOffset0.HasString = true;
                         //EventScriptFinal.Append(ev?.Description);
 
-
+                        EventScriptFinal.Append(ev?.Description);
                         EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}", $"{dlg}"));
                     }
                     catch (Exception)
@@ -422,9 +424,9 @@ namespace Lib999.Text
                 
                         var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
                         Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
-
                         var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
                         eventOffset0.HasString = true;
+                        EventScriptFinal.Append(ev?.Description);
                         EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}", $"{dlg}"));
 
 
@@ -441,13 +443,29 @@ namespace Lib999.Text
                     codeInt2 = Convert.ToInt32(codes[3].Replace(">", ""));
 
                     subName = Dialogs[(codeInt2 << 2) / 4].Text.Replace("<END>", "");
-                    EventScriptFinal.Append(ev?.Description);
+                    
+                    
                     var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == codeInt);
                     var eventOffset1 = ev.OffsetsWithStrings.First(e => e.Code == codeInt2);
                     eventOffset0.HasString = true;
                     eventOffset1.HasString = true;
                     
+                    if (comandName.Contains("$"))
+                    {
+                        EventScriptFinal.Append("\r\n");
+                    }
+
+                    if (comandName.Contains("$___r"))
+                    {
+                        comandName = $"{comandName} RESPONSE_OPTION";
+                    }
+
+                    EventScriptFinal.Append(ev?.Description);
                     EventScriptFinal.Append($": 244  {comandName} {subName}>");
+                    if (comandName.Contains("$"))
+                    {
+                        EventScriptFinal.Append("\r\n");
+                    }
 
                     EventsStrings.Add(comandName);
                     EventsStrings.Add(subName);
@@ -457,6 +475,18 @@ namespace Lib999.Text
                     EventScriptFinal.Append(ev?.Description);
                     EventScriptFinal.Append(ev?.FinalDesc);
                     EventScriptFinal.Append("\r\n------------------------------------------------------------------\r\n");
+                }
+                else if (ev.Description.Contains("BLOCK_ID"))
+                {
+                    EventScriptFinal.Append("\r\n");
+                    EventScriptFinal.Append(ev?.Description);
+                    EventScriptFinal.Append(ev?.FinalDesc);
+                    EventScriptFinal.Append("\r\n");
+                }
+                else if (ev.Description.Contains("comand0x"))
+                {
+                    EventScriptFinal.Append(ev?.Description);
+                    EventScriptFinal.Append(ev?.FinalDesc);
                 }
                 else
                 {
