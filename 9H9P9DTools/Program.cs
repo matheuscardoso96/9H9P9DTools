@@ -6,7 +6,7 @@ using NdsRom.NRom;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-//args = new string[] { "-i", "-r", "Nine Hours, Nine Persons, Nine Doors (USA).nds", "-parallel" }; 
+args = new string[] { "-i", "-r", "Nine Hours, Nine Persons, Nine Doors (USA).nds", "-parallel" }; 
 //args = new string[] { "-e", "-r", "Nine Hours, Nine Persons, Nine Doors (USA).nds", "-parallel" }; 
 
 if (args.Length > 0)
@@ -117,7 +117,11 @@ async static Task ImportFiles(string romPath, bool useParallel)
     foreach (var file in filesToReplace)
     {
         var originalPath = Path.GetRelativePath(convertedDir, file);
-        originalPath = originalPath.Replace("c_", "");
+        
+        if (originalPath.StartsWith("c_"))
+        {
+            originalPath = originalPath[2..];
+        }
 
         if (File.Exists(originalPath))
         {
