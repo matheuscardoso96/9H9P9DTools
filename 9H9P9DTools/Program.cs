@@ -6,7 +6,7 @@ using NdsRom.NRom;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-args = new string[] { "-i", "-r", "Nine Hours, Nine Persons, Nine Doors (USA).nds", "-parallel" }; 
+//args = new string[] { "-i", "-r", "Nine Hours, Nine Persons, Nine Doors (USA).nds", "-parallel" }; 
 //args = new string[] { "-e", "-r", "Nine Hours, Nine Persons, Nine Doors (USA).nds", "-parallel" }; 
 
 if (args.Length > 0)
