@@ -39,32 +39,34 @@ async static Task ExportFiles(string romPath)
     foreach (var file in exportArgs)
     {
 
-        if (file.Contains("*"))
+        var fileExport = $"c_{file}";
+
+        if (fileExport.Contains("*"))
             continue;
 
-        if (file.Contains("-fe"))
-            ExportFont(file);
+        if (fileExport.Contains("-fe"))
+            ExportFont(fileExport);
 
-        if (file.Contains("-bge"))
-            ExportBg(file);
+        if (fileExport.Contains("-bge"))
+            ExportBg(fileExport);
 
-        if (file.Contains("-fsbe"))
-            ExportFsb(file);
+        if (fileExport.Contains("-fsbe"))
+            ExportFsb(fileExport);
 
-        if (file.Contains("-dattextv1e"))
-            ExportFileTexts(file);
+        if (fileExport.Contains("-dattextv1e"))
+            ExportFileTexts(fileExport);
 
-        if (file.Contains("-dattextv4e"))
-            ExportSystemTexts(file);
+        if (fileExport.Contains("-dattextv4e"))
+            ExportSystemTexts(fileExport);
 
-        if (file.Contains("-itemstextse"))
-            ExportItemsNames(file);
+        if (fileExport.Contains("-itemstextse"))
+            ExportItemsNames(fileExport);
 
-        if (file.Contains("-cameratextse"))
-            ExportCameraTexts(file);
+        if (fileExport.Contains("-cameratextse"))
+            ExportCameraTexts(fileExport);
 
-        if (file.Contains("-charatextse"))
-            ExportCharaTexts(file);
+        if (fileExport.Contains("-charatextse"))
+            ExportCharaTexts(fileExport);
     }
 
     var destDir = "999_edited\\root";
@@ -248,7 +250,7 @@ static void ExportFsb(string args)
     {
         Console.WriteLine($"Exportando fsb: {Path.GetFileName(argsSplit[0])}");
         var texts = new FsbTexts(argsSplit[0]);
-        texts.FsbToTxt(argsSplit[0], false);
+        texts.FsbToTxt(argsSplit[0], true);
 
     }
 

@@ -49,9 +49,15 @@ namespace Lib999.Text
 
         public void FsbToTxt(string path, bool exportEvents)
         {
+            path = path.Substring(2);
             var destPath = CreateDestinationPath(path);
 
             File.WriteAllLines($"{destPath}\\{Path.GetFileName(path)}.txt", MainStringBlock.Strings);
+            if (MainStringBlock.SystemTitleStrings.Values.Count > 0)
+            {
+                File.WriteAllLines($"{destPath}\\{Path.GetFileName(path)}.SystemTitle.txt", MainStringBlock.SystemTitleStrings.Values.ToList());
+            }
+            
 
             if (exportEvents)
             {
@@ -65,6 +71,12 @@ namespace Lib999.Text
 
         public void TxtToFsb(string fsbPath, string txtScriptPath)
         {
+            if (txtScriptPath.Contains("a01b"))
+            {
+
+            }
+
+
             MainStringBlock?.ReplaceDialogsWithIdsSimple(ReadTxtScript(txtScriptPath));
 
             MemoryStream memoryStream = new MemoryStream();
@@ -168,6 +180,10 @@ namespace Lib999.Text
             br.BaseStream.Position = Header.Offset1;
             DataReadList = new VLQTable(br);
             MainStringBlock.CreateAScriptV2(br, EventStringsBlock);
+            if (((System.IO.FileStream)br.BaseStream).Name.Contains("a01b"))
+            {
+
+            }
         }
 
         private void ProcessDualScripts(string jpnScriptPath, string[] engScripts)
@@ -362,11 +378,23 @@ namespace Lib999.Text
 
         private static List<Dialog999> ReadTxtScript(string txtScriptPath)
         {
-            var txtScript = File.ReadAllText(txtScriptPath)
-                            .Split(new string[] { "<END>" }, StringSplitOptions.RemoveEmptyEntries)
-                            .Select(dlg => $"{dlg.Replace("\r", "").Replace("\n", "")}<END>")
-                            .Where(dlg => dlg.Contains("ID")).ToList();
+            List<string> txtScript = SplitScript(txtScriptPath);
+            
+            List<Dialog999> dlgs999 = ConvertToDlg999(txtScript);
 
+            var systemTitleScriptPath = txtScriptPath.Replace(".txt", ".SystemTitle.txt");
+         
+
+            if (File.Exists(systemTitleScriptPath))
+            {
+                dlgs999.AddRange(ConvertToDlg999(SplitScript(systemTitleScriptPath)));          
+            }
+
+            return dlgs999;
+        }
+
+        private static List<Dialog999> ConvertToDlg999(List<string> txtScript)
+        {
             var dlgs999 = new List<Dialog999>();
 
             var commandChars = new char[] { '$', '^', '~', '&', '?', '@', ':' };
@@ -401,6 +429,14 @@ namespace Lib999.Text
 
             dlgs999 = dlgs999.OrderBy(d => d.Id).GroupBy(x => x.Id).Select(x => x.First()).ToList();
             return dlgs999;
+        }
+
+        private static List<string> SplitScript(string txtScriptPath)
+        {
+            return File.ReadAllText(txtScriptPath)
+                            .Split(new string[] { "<END>" }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(dlg => $"{dlg.Replace("\r", "").Replace("\n", "")}<END>")
+                            .Where(dlg => dlg.Contains("ID")).ToList();
         }
 
         private void AppendBlock(SirStrings block, uint offset, string blockName, StringBuilder allBlocks)

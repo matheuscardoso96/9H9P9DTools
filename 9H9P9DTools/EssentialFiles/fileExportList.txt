@@ -1,4 +1,9 @@
 *expD exporta arquivo descomprimido
+*999\root\bg\minigame\a21_lucyjohn\resource\0.dat@16@16@8,-bge,expD
+*999\root\bg\minigame\a21_lucyjohn\resource\51.3kg.dat@64@32@8,-bge,expD
+999\root\bg\minigame\b32_oshiguruma\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a21_inputdevice\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\c32_brainwaves2\resource\icon_quit.dat@64@32@8, -bge
 999\root\bg\minigame\calculator\resource\bg_dentaku.dat@256@192@8, -bge
 999\root\bg\minigame\calculator\resource\clear.dat@64@24@8, -bge
 999\root\bg\minigame\calculator\resource\_hit1.dat@88@24@8, -bge

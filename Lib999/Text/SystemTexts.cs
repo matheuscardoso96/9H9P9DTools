@@ -13,6 +13,7 @@ namespace Lib999.Text
         {
             GetData(path);
             var texts = string.Join("\r\n\r\n", StringBlock.Select(x => string.Join("\r\n", x.Strings)).ToList());
+            path = path.Substring(2);
             var dest = $"999_exported\\{path.Replace(Path.GetFileName(path), "")}";
             Directory.CreateDirectory(dest);
             File.WriteAllText($"{dest}\\{Path.GetFileName(path)}.txt", texts);

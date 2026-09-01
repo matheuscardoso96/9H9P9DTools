@@ -14,6 +14,7 @@ namespace Lib999.Text
             StringBlocks = new();
             TablesOffsets = new();
             GetData(path);
+            path = path.Substring(2);
             var texts = string.Join("\r\n\r\n", StringBlocks.Select(x => string.Join("\r\n", x.Strings)).ToList());
             var dest = $"999_exported\\{path.Replace(Path.GetFileName(path),"")}";
             Directory.CreateDirectory(dest);

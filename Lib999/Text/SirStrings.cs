@@ -12,6 +12,7 @@ namespace Lib999.Text
         public Dialog999 Title3 { get; set; } = null;
         public List<Dialog999> Dialogs { get; set; } = new();
         public List<string> Strings { get; set; } = new List<string>();
+        public Dictionary<int, string> SystemTitleStrings { get; set; } = new();
         public List<CommandEvent> EventDialogs { get; set; } = new();
         //public string EventScript { get; set; } = "";
         public StringBuilder EventScriptFinal { get; set; } = new();
@@ -354,7 +355,12 @@ namespace Lib999.Text
 
                 }
             }
-          
+
+            bool systemTitleArgs = false;
+            if (((System.IO.FileStream)br.BaseStream).Name.Contains("a01b"))
+            {
+
+            }
 
             foreach (var ev in EventDialogs)
             {
@@ -374,13 +380,13 @@ namespace Lib999.Text
                     eventOffset0.HasString = true;
                     var append = $"\r\n<char:{Dialogs[(ev.Args[0] << 2) / 4].Text}>";
                     EventScriptFinal.Append(append);
-                    
+
                 }
                 else if (ev.Description.Contains("print_msg"))
                 {
                     var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
                     Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
-                    if (dlg.Contains("∴") )
+                    if (dlg.Contains("∴"))
                     {
                         EventScriptFinal.Append($"<SELECT_RESPONSE>\r\n");
                     }
@@ -390,9 +396,9 @@ namespace Lib999.Text
                     }
                     var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
                     eventOffset0.HasString = true;
-                   
-                   
-                   
+
+
+
                 }
                 else if (ev.Description.Contains("JUMP_TO_SECTION"))
                 {
@@ -412,7 +418,7 @@ namespace Lib999.Text
 
                         throw;
                     }
-                   
+
 
                     //EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[{dlg}]"));
                     // EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}",$"[ID: {ev.Args[0]}, EventOffset : {eventOffset0.Offset.ToString("X")}] [{dlg}]"));
@@ -421,13 +427,13 @@ namespace Lib999.Text
                 }
                 else if (ev.Description.Contains("comand0x34"))
                 {
-                
-                        var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
-                        Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
-                        var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
-                        eventOffset0.HasString = true;
-                        EventScriptFinal.Append(ev?.Description);
-                        EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}", $"{dlg}"));
+
+                    var dlg = Dialogs[(ev.Args[0] << 2) / 4].Text;
+                    Strings.Add($"<ID: {ev.Args[0]}>\r\n{dlg}");
+                    var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == ev.Args[0]);
+                    eventOffset0.HasString = true;
+                    EventScriptFinal.Append(ev?.Description);
+                    EventScriptFinal.Append(ev?.FinalDesc.Replace($"{ev.Args[0]}", $"{dlg}"));
 
 
                 }
@@ -443,13 +449,13 @@ namespace Lib999.Text
                     codeInt2 = Convert.ToInt32(codes[3].Replace(">", ""));
 
                     subName = Dialogs[(codeInt2 << 2) / 4].Text.Replace("<END>", "");
-                    
-                    
+
+
                     var eventOffset0 = ev.OffsetsWithStrings.First(e => e.Code == codeInt);
                     var eventOffset1 = ev.OffsetsWithStrings.First(e => e.Code == codeInt2);
                     eventOffset0.HasString = true;
                     eventOffset1.HasString = true;
-                    
+
                     if (comandName.Contains("$"))
                     {
                         EventScriptFinal.Append("\r\n");
@@ -467,8 +473,28 @@ namespace Lib999.Text
                         EventScriptFinal.Append("\r\n");
                     }
 
+
+
+                    if (systemTitleArgs)
+                    {
+
+                        if (!SystemTitleStrings.ContainsKey(codeInt))
+                        {
+                            SystemTitleStrings.Add(codeInt,$"<ID: {codeInt}>\r\n{comandName}<END>");
+                        }
+
+                        
+                    }
+
+                    if (comandName.Contains("?System") && subName.Contains("Title"))
+                    {
+                        systemTitleArgs = true;
+                    }
+
                     EventsStrings.Add(comandName);
                     EventsStrings.Add(subName);
+
+
                 }
                 else if (ev.Description.Contains("END_SECTION"))
                 {
@@ -487,6 +513,13 @@ namespace Lib999.Text
                 {
                     EventScriptFinal.Append(ev?.Description);
                     EventScriptFinal.Append(ev?.FinalDesc);
+                }
+                else if (ev.Description.Contains("DISCARD_RESULT")) 
+                {
+                    if (systemTitleArgs)
+                    {
+                        systemTitleArgs = false;
+                    }
                 }
                 else
                 {

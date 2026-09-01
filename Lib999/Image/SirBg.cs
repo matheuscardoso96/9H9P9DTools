@@ -134,6 +134,7 @@ namespace Lib999.Image
         public void SirBgToPng(string destination)
         {
             var img = ConvertImageToBmp();
+            destination = destination.Substring(2);
             var dest = $"999_exported\\{destination.Replace(Path.GetFileName(destination), "")}";
             Directory.CreateDirectory(dest);
             img.Save($"{dest}\\{FileName}.png");

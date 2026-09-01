@@ -97,6 +97,9 @@ namespace Lib999.Font
            // $"SirUnknown={string.Join(",",VLQArea.DataVLQArea.Select(x => $"0x{x:X2}"))}"
              };
 
+
+            path = path.Substring(2);
+
             var destPath = "999_exported\\" + path.Replace($"{Path.GetFileName(FontName)}","");
             
             Directory.CreateDirectory(destPath);
