@@ -1,169 +1,90 @@
-﻿using plugin_nintendo.Archives;
+using NdsRom.NRom.NintendoDs;
 
 namespace NdsRom.NRom;
 
-
+/// <summary>
+/// Compatibilidade com os callers existentes. O nome histórico da classe foi mantido,
+/// mas ela não usa mais Kuriimu/Kuriimu2 nem plugin_nintendo.dll.
+/// </summary>
 public static class NDSKuriimuRoomTool
 {
-    public async static Task ExportRomWithKuriimu(string inputPath, string destPath)
+    public static Task ExportRomWithKuriimu(string inputPath, string destPath) => ExportRom(inputPath, destPath);
+
+    public static void ImportRomWithKuriimu(string originalRomPath, string modifiedFilesPath, string outputRomPath) =>
+        ImportRom(originalRomPath, modifiedFilesPath, outputRomPath);
+
+    public static Task ExportRom(string inputPath, string destPath)
     {
-        //stream de leitura de arquivo
+        var rom = NdsRomImage.Load(inputPath);
+        rom.ExtractToDirectory(destPath);
 
-        var dest = $@"{destPath}";
-        Directory.CreateDirectory(dest);
-        var destCopy = $@"c_{destPath}";
-        Directory.CreateDirectory(destCopy);
+        // Mantém o comportamento antigo de criar uma cópia-base c_<pasta>.
+        var fullDest = Path.GetFullPath(destPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        var parent = Path.GetDirectoryName(fullDest) ?? Environment.CurrentDirectory;
+        var name = Path.GetFileName(fullDest);
+        var copyDest = Path.Combine(parent, "c_" + name);
+        rom.ExtractToDirectory(copyDest);
 
-        using (var fs = new FileStream(inputPath, FileMode.Open, FileAccess.Read))
-        {
-            var nds = new NDS();
-            var result = nds.Load(fs);
-
-            foreach (var file in result)
-            {
-
-                if (file.FileSize > 0)
-                {
-                    var dirDest = $@"{dest}{Path.GetDirectoryName(file.FilePath.ToString())}";
-                    var dirDestCopy = $@"{destCopy}{Path.GetDirectoryName(file.FilePath.ToString())}";
-                    var fileName = Path.GetFileName(file.FilePath.ToString());
-                    Directory.CreateDirectory(dirDest);
-                    Directory.CreateDirectory(dirDestCopy);
-                    var fileData = await file.GetFileData();
-                    var fileBytes = new byte[fileData.Length];
-                    fileData.Read(fileBytes, 0, fileBytes.Length);
-                    File.WriteAllBytes($@"{dirDest}\{fileName}", fileBytes);
-                    File.WriteAllBytes($@"{dirDestCopy}\{fileName}", fileBytes);
-                }
-               
-
-            }
-        }
-
+        return Task.CompletedTask;
     }
 
-    public static void ImportRomWithKuriimu(string originalRomPath, string modifiedFilesPath, string outputRomPath)
+    public static void ImportRom(string originalRomPath, string modifiedFilesPath, string outputRomPath)
     {
+        var rom = NdsRomImage.Load(originalRomPath);
+        var replaced = rom.ApplyDirectory(modifiedFilesPath);
 
-        using (var fs = new FileStream(originalRomPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-        {
-            var nds = new NDS();
-            var result = nds.Load(fs);
+        Console.WriteLine($"Arquivos substituídos: {replaced}");
+        rom.Save(outputRomPath);
 
-          
-            foreach (var file in result)
-            {
-                if (file.FilePath.ToString().Contains("arm9"))
-                {
-
-                }
-                var modifiedFilePath = $"{modifiedFilesPath}{file.FilePath.ToString().Replace(@"/", @"\")}" ;
-                if (File.Exists(modifiedFilePath) && file.FileSize > 0)
-                {
-                    var fileBytes = File.ReadAllBytes(modifiedFilePath);
-                    file.SetFileData(new MemoryStream(fileBytes));
-                    
-                }
-            }
-           
-            using (var outputFs = new FileStream(outputRomPath, FileMode.Create, FileAccess.Write))
-            {
-                nds.Save(outputFs, result);
-            }
-        }
+        foreach (var issue in NdsRomValidator.ValidateFile(outputRomPath))
+            Console.WriteLine(issue.IsError ? $"[ERRO] {issue.Message}" : $"[OK] {issue.Message}");
     }
 
-    // compare old room with new room and show differences
+    // Compare old ROM with new ROM and show differences in exposed files.
     public static void CompareRoms(string oldRomPath, string newRomPath)
     {
-        using (var oldFs = new FileStream(oldRomPath, FileMode.Open, FileAccess.Read))
-        using (var newFs = new FileStream(newRomPath, FileMode.Open, FileAccess.Read))
+        var oldRom = NdsRomImage.Load(oldRomPath);
+        var newRom = NdsRomImage.Load(newRomPath);
+
+        var oldFiles = oldRom.Files.ToDictionary(x => x.VirtualPath, StringComparer.OrdinalIgnoreCase);
+        var newFiles = newRom.Files.ToDictionary(x => x.VirtualPath, StringComparer.OrdinalIgnoreCase);
+        var differences = new List<string>();
+
+        foreach (var (path, oldFile) in oldFiles)
         {
-            var oldNds = new NDS();
-            var newNds = new NDS();
-
-            var oldFiles = oldNds.Load(oldFs);
-            var newFiles = newNds.Load(newFs);
-
-            var differences = new List<string>();
-
-            foreach (var oldFile in oldFiles)
+            if (!newFiles.TryGetValue(path, out var newFile))
             {
-                var matchingNewFile = newFiles.FirstOrDefault(f => f.FilePath.ToString() == oldFile.FilePath.ToString());
-
-                if (matchingNewFile == null)
-                {
-                    differences.Add($"File missing in new ROM: {oldFile.FilePath}");
-                    continue;
-                }
-
-                if (oldFile.FileSize != matchingNewFile.FileSize)
-                {
-                    differences.Add($"File size mismatch: {oldFile.FilePath} (Old: {oldFile.FileSize}, New: {matchingNewFile.FileSize})");
-                }
-                else
-                {
-                    using (var oldData = oldFile.GetFileData().Result)
-                    using (var newData = matchingNewFile.GetFileData().Result)
-                    {
-                        if (!StreamsAreEqual(oldData, newData))
-                        {
-                            differences.Add($"File content mismatch: {oldFile.FilePath}");
-                        }
-                    }
-                }
+                differences.Add($"File missing in new ROM: {path}");
+                continue;
             }
 
-            foreach (var newFile in newFiles)
+            if (oldFile.FileSize != newFile.FileSize)
             {
-                var matchingOldFile = oldFiles.FirstOrDefault(f => f.FilePath.ToString() == newFile.FilePath.ToString());
-
-                if (matchingOldFile == null)
-                {
-                    differences.Add($"New file added in new ROM: {newFile.FilePath}");
-                }
+                differences.Add($"File size mismatch: {path} (Old: {oldFile.FileSize}, New: {newFile.FileSize})");
+                continue;
             }
 
-            if (differences.Count == 0)
-            {
-                Console.WriteLine("No differences found between the ROMs.");
-            }
-            else
-            {
-                Console.WriteLine("Differences found:");
-                foreach (var difference in differences)
-                {
-                    Console.WriteLine(difference);
-                }
-            }
+            if (!oldFile.Data.AsSpan().SequenceEqual(newFile.Data))
+                differences.Add($"File content mismatch: {path}");
         }
+
+        foreach (var path in newFiles.Keys)
+        {
+            if (!oldFiles.ContainsKey(path))
+                differences.Add($"New file added in new ROM: {path}");
+        }
+
+        if (differences.Count == 0)
+        {
+            Console.WriteLine("No differences found between the ROMs.");
+            return;
+        }
+
+        Console.WriteLine("Differences found:");
+        foreach (var difference in differences)
+            Console.WriteLine(difference);
     }
 
-    private static bool StreamsAreEqual(Stream stream1, Stream stream2)
-    {
-        const int bufferSize = 1024 * 4;
-        var buffer1 = new byte[bufferSize];
-        var buffer2 = new byte[bufferSize];
-
-        while (true)
-        {
-            var count1 = stream1.Read(buffer1, 0, buffer1.Length);
-            var count2 = stream2.Read(buffer2, 0, buffer2.Length);
-
-            if (count1 != count2)
-            {
-                return false;
-            }
-
-            if (count1 == 0)
-            {
-                return true;
-            }
-
-            if (!buffer1.AsSpan(0, count1).SequenceEqual(buffer2.AsSpan(0, count2)))
-            {
-                return false;
-            }
-        }
-    }
+    public static IReadOnlyList<NdsValidationIssue> ValidateRom(string romPath) =>
+        NdsRomValidator.ValidateFile(romPath);
 }

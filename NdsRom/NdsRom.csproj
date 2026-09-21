@@ -13,25 +13,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Kanvas">
-      <HintPath>Kanvas.dll</HintPath>
-    </Reference>
-    <Reference Include="Komponent">
-      <HintPath>Komponent.dll</HintPath>
-    </Reference>
-    <Reference Include="Kompression">
-      <HintPath>Kompression.dll</HintPath>
-    </Reference>
-    <Reference Include="Kontract">
-      <HintPath>Kontract.dll</HintPath>
-    </Reference>
-    <Reference Include="Kryptography">
-      <HintPath>Kryptography.dll</HintPath>
-    </Reference>
-    <Reference Include="plugin_nintendo">
-      <HintPath>plugin_nintendo.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
