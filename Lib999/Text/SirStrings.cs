@@ -735,7 +735,8 @@ namespace Lib999.Text
 
                     if (commandEvent.Description == "<Cmd")
                     {
-                        if (arg != 0x4E && arg != 0x6E && arg != 0x77 && arg != 0x43 && arg != 0x42)
+
+                       if (arg != 0x4E && arg != 0x6E && arg != 0x77 && arg != 0x43 && arg != 0x42 && arg == 0x5A)
                         {
                             sb.Append($" {br.ReadByte()}");
                             sb.Append($" {br.ReadByte()}");
