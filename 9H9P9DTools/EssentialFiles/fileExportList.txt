@@ -1,9 +1,4 @@
 *expD exporta arquivo descomprimido
-*999\root\bg\minigame\a21_lucyjohn\resource\0.dat@16@16@8,-bge,expD
-*999\root\bg\minigame\a21_lucyjohn\resource\51.3kg.dat@64@32@8,-bge,expD
-999\root\bg\minigame\b32_oshiguruma\resource\icon_quit.dat@64@32@8, -bge
-999\root\bg\minigame\a21_inputdevice\resource\icon_quit.dat@64@32@8, -bge
-999\root\bg\minigame\c32_brainwaves2\resource\icon_quit.dat@64@32@8, -bge
 999\root\bg\minigame\calculator\resource\bg_dentaku.dat@256@192@8, -bge
 999\root\bg\minigame\calculator\resource\clear.dat@64@24@8, -bge
 999\root\bg\minigame\calculator\resource\_hit1.dat@88@24@8, -bge
@@ -146,6 +141,7 @@
 999\root\etc\item.dat,  -itemstextse
 999\root\etc\camera.dat,  -cameratextse
 999\root\etc\chara.dat,  -charatextse
+999\root\etc\staff.dat, -dattextv4e
 *rfile tela de baixo
 999\root\bg\minigame\room\resource\r_file.dat@56@16@8, -bge
 999\root\bg\minigame\room\resource\r_file_d.dat@56@16@8, -bge
@@ -1046,3 +1042,80 @@
 999\root\bg\a01\home_01-home_02#2.dat@256@192@8, -bge
 999\root\bg\a01\home_01-home_02#3.dat@256@192@8, -bge
 999\root\bg\a01\home_01.dat@256@192@8, -bge
+
+*gráficos extras
+999\root\bg\minigame\a12_inputdevice\resource\icon_open.dat@192@48@8, -bge
+999\root\bg\minigame\a12_inputdevice\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a21_inputdevice\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a21_lucyjohn\resource\icon_reset.dat@64@32@8, -bge
+999\root\bg\minigame\a31_helm\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a31_telegraph\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a32_inputdevice\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a32_morse\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a32_morse\resource\icon_reset.dat@64@32@8, -bge
+999\root\bg\minigame\a41_bookshelf\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a41_bookshelf\resource\icon_select_2.dat@16@112@8, -bge
+999\root\bg\minigame\a41_bookshelf\resource\bg_bookshelf.dat@256@192@8, -bge
+999\root\bg\minigame\a41_bookshelf\resource\icon_ebook.dat@16@112@8, -bge
+999\root\bg\minigame\a41_bookshelf\resource\icon_nbook.dat@16@112@8, -bge
+999\root\bg\minigame\a41_bookshelf\resource\icon_obook.dat@16@112@8, -bge
+999\root\bg\minigame\a41_bookshelf\resource\icon_pbook.dat@16@112@8, -bge
+999\root\bg\minigame\a41_bookshelf\resource\icon_select_1.dat@16@112@8, -bge
+999\root\bg\minigame\a41_cylinderlock\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a41_password\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a42_cross\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a42_cross\resource\icon_reset.dat@64@32@8, -bge
+999\root\bg\minigame\a42_helm\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a42_morse\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a42_morse\resource\icon_reset.dat@64@32@8, -bge
+999\root\bg\minigame\a51_anagram\resource\icon_reset.dat@64@32@8, -bge
+999\root\bg\minigame\b11_piano\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\b11_piano\resource\icon_reset.dat@64@32@8, -bge
+999\root\bg\minigame\b12_baccarat\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\b12_exitlockingdevice1\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\b12_exitlockingdevice2\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\b12_slot\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\b21_lightsout\resource\failed.dat@256@16@8, -bge
+999\root\bg\minigame\b21_lightsout\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\b21_lightsout\resource\icon_reset.dat@64@32@8, -bge
+999\root\bg\minigame\b21_lightsout\resource\key_lock_open.dat@256@16@8, -bge
+999\root\bg\minigame\b31_gear\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\b32_lockingdevice1\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\b32_lockingdevice2\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\b32_oshiguruma\resource\bg_torisetu.dat@256@192@8, -bge
+999\root\bg\minigame\b32_oshiguruma\resource\icon_kaisu.dat@32@16@8, -bge
+999\root\bg\minigame\b32_oshiguruma\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\b32_oshiguruma\resource\icon_reset.dat@64@32@8, -bge
+
+999\root\bg\minigame\preview\resource\a.dat@104@104@8, -bge
+999\root\bg\minigame\preview\resource\a_s.dat@104@104@8, -bge
+999\root\bg\minigame\preview\resource\b.dat@104@104@8, -bge
+999\root\bg\minigame\preview\resource\b_s.dat@104@104@8, -bge
+999\root\bg\minigame\preview\resource\return.dat@64@32@8, -bge
+999\root\bg\minigame\preview\resource\return_p.dat@64@32@8, -bge
+
+999\root\bg\minigame\calculator\resource\tansaku.dat@64@32@8, -bge
+999\root\bg\minigame\calculator\resource\tansaku_p.dat@64@32@8, -bge
+
+999\root\bg\minigame\map\resource\bg_map_blank.dat@256@192@8, -bge
+999\root\bg\minigame\map\resource\deck_a.dat@48@16@8, -bge
+999\root\bg\minigame\map\resource\deck_b.dat@48@16@8, -bge
+999\root\bg\minigame\map\resource\deck_bottom.dat@64@16@8, -bge
+999\root\bg\minigame\map\resource\deck_c.dat@48@16@8, -bge
+999\root\bg\minigame\map\resource\deck_e.dat@48@16@8, -bge
+999\root\bg\minigame\map\resource\search.dat@64@32@8, -bge
+999\root\bg\minigame\map\resource\search_p.dat@64@32@8, -bge
+
+999\root\bg\minigame\a31_helm\resource\icon_lＳtop.dat@80@48@8, -bge
+
+999\root\bg\minigame\b12_slot\resource\turn.dat@72@32@8, -bge
+
+999\root\bg\minigame\a21_lucyjohn\resource\51.3kg.dat@64@24@8, -bge
+999\root\bg\minigame\a21_lucyjohn\resource\53.2kg.dat@64@24@8, -bge
+999\root\bg\minigame\a21_lucyjohn\resource\bg_johnlucy.dat@256@192@8, -bge
+
+*Export
+999\root\bg\minigame\a01_suitcase\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a01_suitcase\resource\icon_reset.dat@64@32@8, -bge
+999\root\bg\minigame\a01_cardlock\resource\icon_quit.dat@64@32@8, -bge
+999\root\bg\minigame\a01_cardlock\resource\icon_reset.dat@64@32@8, -bge
