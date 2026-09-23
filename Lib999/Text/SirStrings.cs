@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Lib999.Image;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace Lib999.Text
@@ -66,6 +67,13 @@ namespace Lib999.Text
             }
 
 
+        }
+
+        public SirStrings()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            JapaneseEncoding = Encoding.GetEncoding(932);
+            InitSjisTables();
         }
 
         public SirStrings(BinaryReader br, uint stringTablePosition, bool eventPointer = false)
@@ -650,7 +658,7 @@ namespace Lib999.Text
 
                     var specialCharCode = (code << 8) + br.ReadByte();
                     SpecialChars.TryGetValue(specialCharCode, out var special);
-                    if (special != null)
+                    if (special != null && !string.IsNullOrWhiteSpace(special.Description))
                     {
                         text.Append(special.Description);
                         text.Append(GetTextArgs(special, br));
@@ -916,9 +924,11 @@ namespace Lib999.Text
 
         private void InitSpecialCharsCode()
         {
-
-            foreach (var item in SpecialChars)
-                SpecialCharsCode.Add(item.Value.Description.Replace("\r", "").Replace("\n", ""), item.Key);
+            if (SpecialCharsCode.Count == 0)
+            {
+                foreach (var item in SpecialChars)
+                    SpecialCharsCode.Add(item.Value.Description.Replace("\r", "").Replace("\n", ""), item.Key);
+            }
         }
 
         public void ReplaceDialogsWithIds(List<Dialog999> dialogsToReplace, BinaryWriter bw)
@@ -1117,13 +1127,18 @@ namespace Lib999.Text
 
         }
 
-        private void SetDliag999TextInBytes(Dialog999 dialog)
+        public void SetDliag999TextInBytes(Dialog999 dialog, bool isStaff = false)
         {
+            InitSpecialCharsCode();
             List<byte> bytes = new List<byte>();
+            if (isStaff)
+            {
+                dialog.Text = dialog.Text.Replace("<END>","\0");
+            }
 
             for (int i = 0; i < dialog.Text.Length; i++)
             {
-                if (dialog.Text[i] == '<' || dialog.Text[i] == '[')
+                if (!isStaff && (dialog.Text[i] == '<' || dialog.Text[i] == '[') )
                 {
                     var finalizer = dialog.Text[i] == '<' ? '>' : ']';
                     StringBuilder tag = new();

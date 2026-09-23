@@ -11,6 +11,7 @@
         public byte[] TextInBytes { get; set; }
         public bool IsEventData{ get; set; }
         public bool IsCommand { get; set; }
+        public bool IsMainString { get; set; }
 
         public Dialog999(int id, uint offset, string text, int length)
         {

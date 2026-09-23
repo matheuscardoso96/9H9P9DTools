@@ -29,4 +29,40 @@ namespace Lib999.Text
             bw.Write(OffsetFourthTable);
         }
     }
+
+    public class RoomSubHeader
+    {
+        public Dictionary<uint,uint> OffsetMainAndChildren { get; set; }
+
+        public RoomSubHeader(BinaryReader br)
+        {
+            OffsetMainAndChildren = new Dictionary<uint, uint>();
+            while (true) 
+            {
+                var offset = br.ReadUInt32();
+                if (offset == 0) break;
+                var childrenOffset = br.ReadUInt32();
+                OffsetMainAndChildren.Add(offset, childrenOffset);
+            }
+        }
+
+        public RoomSubHeader()
+        {
+            OffsetMainAndChildren = new();
+        }
+
+        public void OffsetMainAndChildrenAddItem(uint key, uint value) 
+        {
+            OffsetMainAndChildren.Add(key, value);
+        }
+
+        public void Write(BinaryWriter bw)
+        {
+            foreach (var item in OffsetMainAndChildren)
+            {
+                bw.Write(item.Key);
+                bw.Write(item.Value);
+            }
+        }
+    }
 }

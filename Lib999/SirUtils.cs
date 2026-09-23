@@ -80,6 +80,16 @@ namespace Lib999
 
         }
 
+        public static void AlignWith0By(this BinaryWriter bw, int value)
+        {
+            if (bw.BaseStream.Position % value != 0)
+            {
+                while (bw.BaseStream.Position % value != 0)
+                    bw.Write((byte)0x00);
+            }
+
+        }
+
         public static string ReadNullTerminatedString(BinaryReader br)
         {
             var sb = new StringBuilder();
