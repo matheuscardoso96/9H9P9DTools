@@ -204,7 +204,7 @@ public sealed class NdsRomImage
         {
             var diskPath = ToDiskPath(destination, file.VirtualPath);
             var directory = Path.GetDirectoryName(diskPath);
-            if (!string.IsNullOrEmpty(directory))
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
             File.WriteAllBytes(diskPath, file.Data);
         }

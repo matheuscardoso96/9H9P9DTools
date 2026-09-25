@@ -20,10 +20,7 @@ public static class NDSKuriimuRoomTool
 
         // Mantém o comportamento antigo de criar uma cópia-base c_<pasta>.
         var fullDest = Path.GetFullPath(destPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-        var parent = Path.GetDirectoryName(fullDest) ?? Environment.CurrentDirectory;
-        var name = Path.GetFileName(fullDest);
-        var copyDest = Path.Combine(parent, "c_" + name);
-        rom.ExtractToDirectory(copyDest);
+        rom.ExtractToDirectory(fullDest.Replace("999\\root", "c_999\\root"));
 
         return Task.CompletedTask;
     }
